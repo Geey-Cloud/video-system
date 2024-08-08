@@ -20,7 +20,7 @@ DEFINES += audiox
 DEFINES += openglx
 
 #启用内核ffmpeg(如果要支持xp只能用ffmpeg2/ffmpeg3)
-DEFINES += ffmpeg ffmpeg4 videoffmpeg
+DEFINES += ffmpeg ffmpeg7 videoffmpeg
 DEFINES += qmedia1 vlcx1 mpvx1 mdkx1 qtavx1 haikang1 easyplayer1
 
 #启用百度地图

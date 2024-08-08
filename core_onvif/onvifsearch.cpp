@@ -149,10 +149,17 @@ void OnvifSearch::checkData(const QByteArray &data, const QString &ip)
             }
         }
     }
-
+#if 1
+    if (deviceInfo.name.contains("BovaTech")) {
+        deviceInfos << deviceInfo;
+        emit receiveDevice(deviceInfo);
+        emit receiveInfo(QString("发现设备 -> %1").arg(addr));
+    }
+#elif
     deviceInfos << deviceInfo;
     emit receiveDevice(deviceInfo);
     emit receiveInfo(QString("发现设备 -> %1").arg(addr));
+#endif
 }
 
 bool OnvifSearch::checkExist(const QString &addr)
