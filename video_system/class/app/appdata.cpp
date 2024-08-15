@@ -15,7 +15,7 @@ QString AppData::CurrentImage = "bg_alarm.jpg";
 
 int AppData::RowHeight = 25;
 int AppData::LeftWidth = 160;
-int AppData::RightWidth = 200;
+int AppData::RightWidth = 250;
 int AppData::TopHeight = 80;
 int AppData::BottomHeight = 0;
 int AppData::ToolHeight = 40;

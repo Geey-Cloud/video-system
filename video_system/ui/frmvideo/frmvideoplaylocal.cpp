@@ -29,9 +29,10 @@ void frmVideoPlayLocal::initForm()
 {
     //存储规则约定
     //1. 默认存储主目录 video_normal
-    //2. 主目录下按照日期目录存放(2025-10-01/2025-10-31)
-    //3. 日期目录下是单个视频文件(ch01_2021-04-07-14-08-11.mp4/ch02_2021-04-07-14-08-11.mp4)
-    //4. 拓展功能可以存储对应的数据文件比如经纬度数据和视频文件一个目录(名称一样并且拓展名可以是txt)
+    //2. 主目录下按照设备名称目录存放(摄像机#1/摄像机#2)
+    //3. 设备名称目录下按照日期目录存放(2025-10-01/2025-10-31)
+    //4. 日期目录下是单个视频文件(ch01_2021-04-07-14-08-11.mp4/ch02_2021-04-07-14-08-11.mp4)
+    //5. 拓展功能可以存储对应的数据文件比如经纬度数据和视频文件一个目录(名称一样并且拓展名可以是txt)
 
     ui->widgetRight->setFixedWidth(AppData::RightWidth);
 
@@ -40,8 +41,18 @@ void frmVideoPlayLocal::initForm()
         ui->cboxCh->addItem(QString("通道%1").arg(i, 2, 10, QChar('0')));
     }
 
-    ui->cboxType->addItem("存储视频");
     ui->cboxType->addItem("报警视频");
+    ui->cboxType->addItem("存储视频");
+
+    QDir dir(AppConfig::VideoAlarmPath);
+    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+    QStringList dirList = dir.entryList();
+
+    ui->cboxDeviceName->addItem("所有设备");
+    for (const QString &dirName : dirList) {
+        ui->cboxDeviceName->addItem(dirName);
+    }
+    ui->cboxDeviceName->setCurrentIndex(0);
 
     QtHelper::initDataTimeEdit(ui->dateStart, -20);
     QtHelper::initDataTimeEdit(ui->dateEnd, 1);
@@ -222,41 +233,85 @@ void frmVideoPlayLocal::on_btnSelect_clicked()
         filePath = AppConfig::VideoAlarmPath;
     }
 
-    //获取所有文件夹名称,根据时间查询对应通道对应类型视频
-    //如果开始时间小于或者等于结束时间,则将开始时间对应文件夹下的视频文件添加到列表
-    //然后将开始时间加一天,直到大于结束时间
-    while (dateStart <= dateEnd) {
-        //生成对应日期的文件夹
-        QString savePath = QString("%1/%2").arg(filePath).arg(dateStart.toString("yyyy-MM-dd"));
-        QDir saveDir(savePath);
-        //判断文件夹是否存在
-        if (saveDir.exists()) {
-            //指定文件拓展名过滤,按照时间升序排序
-            QStringList filter;
-            filter << "*.mp4" << "*.h264" << "*.h265" << "*.mov" << "*.avi" << "*.mkv";
-            QStringList fileNames = saveDir.entryList(filter, QDir::NoFilter, QDir::Time | QDir::Reversed);
-            foreach (QString fileName, fileNames) {
-                //过滤不符合要求的文件
-                QString fullName = savePath + "/" + fileName;
-                if (!VideoHelper::checkSaveFile(fullName, fileName, isffmpeg)) {
-                    continue;
+    //过滤指定的设备
+    QString deviceName = ui->cboxDeviceName->currentText();
+
+    if (deviceName == "所有设备") {
+        for (int index = 1; index < ui->cboxDeviceName->count(); ++index) {
+            deviceName = ui->cboxDeviceName->itemText(index);
+            QDate dateStartTmp = dateStart;
+            //获取所有文件夹名称,根据时间查询对应通道对应类型视频
+            //如果开始时间小于或者等于结束时间,则将开始时间对应文件夹下的视频文件添加到列表
+            //然后将开始时间加一天,直到大于结束时间
+            while (dateStartTmp <= dateEnd) {
+                //生成对应日期的文件夹
+                QString savePath = QString("%1/%2/%3").arg(filePath).arg(deviceName).arg(dateStartTmp.toString("yyyy-MM-dd"));
+                QDir saveDir(savePath);
+                //判断文件夹是否存在
+                if (saveDir.exists()) {
+                    //指定文件拓展名过滤,按照时间升序排序
+                    QStringList filter;
+                    filter << "*.mp4" << "*.h264" << "*.h265" << "*.mov" << "*.avi" << "*.mkv";
+                    QStringList fileNames = saveDir.entryList(filter, QDir::NoFilter, QDir::Time | QDir::Reversed);
+                    foreach (QString fileName, fileNames) {
+                        //过滤不符合要求的文件
+                        QString fullName = savePath + "/" + fileName;
+                        if (!VideoHelper::checkSaveFile(fullName, fileName, isffmpeg)) {
+                            continue;
+                        }
+
+                        //如果是选择的所有通道,则不过滤视频文件
+                        if (ui->cboxCh->currentText() == "所有通道") {
+                            addItem(fileName, fullName);
+                        } else {
+                            //对应通道的视频文件添加进来
+                            QString chVideo = fileName.split("_").first();
+                            QString chName = QString("ch%1").arg(ui->cboxCh->currentIndex(), 2, 10, QChar('0'));
+                            if (chVideo == chName) {
+                                addItem(fileName, fullName);
+                            }
+                        }
+                    }
                 }
 
-                //如果是选择的所有通道,则不过滤视频文件
-                if (ui->cboxCh->currentText() == "所有通道") {
-                    addItem(fileName, fullName);
-                } else {
-                    //对应通道的视频文件添加进来
-                    QString chVideo = fileName.split("_").first();
-                    QString chName = QString("ch%1").arg(ui->cboxCh->currentIndex(), 2, 10, QChar('0'));
-                    if (chVideo == chName) {
+                dateStartTmp = dateStartTmp.addDays(1);
+            }
+        }
+    }
+    else {
+        while (dateStart <= dateEnd) {
+            //生成对应日期的文件夹
+            QString savePath = QString("%1/%2/%3").arg(filePath).arg(deviceName).arg(dateStart.toString("yyyy-MM-dd"));
+            QDir saveDir(savePath);
+            //判断文件夹是否存在
+            if (saveDir.exists()) {
+                //指定文件拓展名过滤,按照时间升序排序
+                QStringList filter;
+                filter << "*.mp4" << "*.h264" << "*.h265" << "*.mov" << "*.avi" << "*.mkv";
+                QStringList fileNames = saveDir.entryList(filter, QDir::NoFilter, QDir::Time | QDir::Reversed);
+                foreach (QString fileName, fileNames) {
+                    //过滤不符合要求的文件
+                    QString fullName = savePath + "/" + fileName;
+                    if (!VideoHelper::checkSaveFile(fullName, fileName, isffmpeg)) {
+                        continue;
+                    }
+
+                    //如果是选择的所有通道,则不过滤视频文件
+                    if (ui->cboxCh->currentText() == "所有通道") {
                         addItem(fileName, fullName);
+                    } else {
+                        //对应通道的视频文件添加进来
+                        QString chVideo = fileName.split("_").first();
+                        QString chName = QString("ch%1").arg(ui->cboxCh->currentIndex(), 2, 10, QChar('0'));
+                        if (chVideo == chName) {
+                            addItem(fileName, fullName);
+                        }
                     }
                 }
             }
-        }
 
-        dateStart = dateStart.addDays(1);
+            dateStart = dateStart.addDays(1);
+        }
     }
 
     ui->labTip->setText(QString("共找到 %1 个").arg(ui->listWidget->count()));

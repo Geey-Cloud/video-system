@@ -446,7 +446,8 @@ void DeviceOnvif::receiveEvent(const QString &url, const OnvifEventInfo &event)
         VideoWidget *videoWidget = VideoManage::Instance()->getVideoWidget(rtspMain, rtspSub);
         if (videoWidget) {
             flag = videoWidget->objectName();
-            fileName = QString("%1/%2/%3_%4.jpg").arg(AppConfig::ImageAlarmPath).arg(QDATE).arg(flag).arg(STRDATETIMEMS);
+            // 报警按ImageAlarmPath/Camera/NameDate/channel_yyyy-MM-dd-HH-mm-ss-zzz.jpg保存图片
+            fileName = QString("%1/%2/%3/%4_%5.jpg").arg(AppConfig::ImageAlarmPath).arg(ipcName).arg(QDATE).arg(flag).arg(STRDATETIMEMS);
             videoWidget->snap(fileName);
 
             //放入队列线程处理(保证抓图完成)
@@ -465,7 +466,7 @@ void DeviceOnvif::receiveEvent(const QString &url, const OnvifEventInfo &event)
     //暂定开关量报警弹出报警视频并录像
     if (alarm && info == "开关量报警") {
         QString url = DbData::getRtspAddr(index);
-        fileName = QString("%1/%2/%3_%4.mp4").arg(AppConfig::VideoAlarmPath).arg(QDATE).arg(flag).arg(STRDATETIMEMS);
+        fileName = QString("%1/%2/%3/%4_%5.mp4").arg(AppConfig::VideoAlarmPath).arg(ipcName).arg(QDATE).arg(flag).arg(STRDATETIMEMS);
         DeviceHelper::showVideo(url, flag, AppConfig::AlarmSaveTime, fileName);
     }
 

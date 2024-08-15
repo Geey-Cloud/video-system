@@ -31,9 +31,10 @@ void frmVideoPlayImage::initForm()
 {
     //存储规则约定
     //1. 默认存储主目录 image_normal
-    //2. 主目录下按照日期目录存放(2025-10-01/2025-10-31)
-    //3. 日期目录下是单个图片文件(ch01_2021-04-07-14-08-11-222.jpg/ch02_2021-04-07-14-08-11-333.jpg)
-    //4. 拓展功能可以存储对应的数据文件比如警情文字和图片文件一个目录(名称一样并且拓展名可以是txt)
+    //2. 主目录下按照设备名称目录存放(摄像机#1/摄像机#2)
+    //3. 设备名称目录下按照日期目录存放(2025-10-01/2025-10-31)
+    //4. 日期目录下是单个图片文件(ch01_2021-04-07-14-08-11-222.jpg/ch02_2021-04-07-14-08-11-333.jpg)
+    //5. 拓展功能可以存储对应的数据文件比如警情文字和图片文件一个目录(名称一样并且拓展名可以是txt)
 
     ui->widgetRight->setFixedWidth(AppData::RightWidth);
 
@@ -42,8 +43,19 @@ void frmVideoPlayImage::initForm()
         ui->cboxCh->addItem(QString("通道%1").arg(i, 2, 10, QChar('0')));
     }
 
-    ui->cboxType->addItem("存储图片");
     ui->cboxType->addItem("报警图片");
+    ui->cboxType->addItem("存储图片");
+
+    //todo cboxDeviceName的item随image_alarm内文件夹变化而变化
+    QDir dir(AppConfig::ImageAlarmPath);
+    dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+    QStringList dirList = dir.entryList();
+
+    ui->cboxDeviceName->addItem("所有设备");
+    for (const QString &dirName : dirList) {
+        ui->cboxDeviceName->addItem(dirName);
+    }
+    ui->cboxDeviceName->setCurrentIndex(0);
 
     QtHelper::initDataTimeEdit(ui->dateStart, -20);
     QtHelper::initDataTimeEdit(ui->dateEnd, 1);
@@ -161,41 +173,85 @@ void frmVideoPlayImage::on_btnSelect_clicked()
     QString channel = ui->cboxCh->currentText();
     QString ch = QString("ch%1").arg(channel.mid(2, channel.length()));
 
-    //将有文件的日期目录加载到列表
-    //并将该目录对应的通道的图片集合名称存入自定义属性
-    //然后将开始时间加一天,直到大于结束时间
-    while (dateStart <= dateEnd) {
-        //生成对应日期的文件夹
-        QString dateName = dateStart.toString("yyyy-MM-dd");
-        QString savePath = QString("%1/%2").arg(filePath).arg(dateName);
-        QDir saveDir(savePath);
-        //判断文件夹是否存在
-        if (saveDir.exists()) {
-            //指定文件拓展名过滤,按照时间升序排序
-            QStringList filter;
-            filter << "*.jpg" << "*.png";
-            QStringList fileNames = saveDir.entryList(filter, QDir::NoFilter, QDir::Time | QDir::Reversed);
+    //过滤指定的设备
+    QString deviceName = ui->cboxDeviceName->currentText();
 
-            QStringList fullNames;
-            foreach (QString fileName, fileNames) {
-                QString name = savePath + "/" + fileName;
-                if (channel == "所有通道") {
-                    fullNames << name;
-                } else {
-                    if (fileName.startsWith(ch)) {
-                        fullNames << name;
+    if (deviceName == "所有设备") {
+        for (int index = 1; index < ui->cboxDeviceName->count(); ++index) {
+            deviceName = ui->cboxDeviceName->itemText(index);
+            QDate dateStartTmp = dateStart;
+            //将有文件的日期目录加载到列表
+            //并将该目录对应的通道的图片集合名称存入自定义属性
+            //然后将开始时间加一天,直到大于结束时间
+            while (dateStartTmp <= dateEnd) {
+                //生成对应日期的文件夹
+                QString dateName = dateStartTmp.toString("yyyy-MM-dd");
+                QString savePath = QString("%1/%2/%3").arg(filePath).arg(deviceName).arg(dateName);
+                QDir saveDir(savePath);
+                //判断文件夹是否存在
+                if (saveDir.exists()) {
+                    //指定文件拓展名过滤,按照时间升序排序
+                    QStringList filter;
+                    filter << "*.jpg" << "*.png";
+                    QStringList fileNames = saveDir.entryList(filter, QDir::NoFilter, QDir::Time | QDir::Reversed);
+
+                    QStringList fullNames;
+                    foreach (QString fileName, fileNames) {
+                        QString name = savePath + "/" + fileName;
+                        if (channel == "所有通道") {
+                            fullNames << name;
+                        } else {
+                            if (fileName.startsWith(ch)) {
+                                fullNames << name;
+                            }
+                        }
                     }
+
+                    int count = fullNames.count();
+                    if (count > 0) {
+                        QString text = QString("%1 %2 %3 %4张").arg(deviceName).arg(dateName).arg(channel).arg(count);
+                        addItem(text, fullNames.join("|"));
+                    }
+                }
+
+                dateStartTmp = dateStartTmp.addDays(1);
+            }
+        }
+    }
+    else {
+        while (dateStart <= dateEnd) {
+            //生成对应日期的文件夹
+            QString dateName = dateStart.toString("yyyy-MM-dd");
+            QString savePath = QString("%1/%2/%3").arg(filePath).arg(deviceName).arg(dateName);
+            QDir saveDir(savePath);
+            //判断文件夹是否存在
+            if (saveDir.exists()) {
+                //指定文件拓展名过滤,按照时间升序排序
+                QStringList filter;
+                filter << "*.jpg" << "*.png";
+                QStringList fileNames = saveDir.entryList(filter, QDir::NoFilter, QDir::Time | QDir::Reversed);
+
+                QStringList fullNames;
+                foreach (QString fileName, fileNames) {
+                    QString name = savePath + "/" + fileName;
+                    if (channel == "所有通道") {
+                        fullNames << name;
+                    } else {
+                        if (fileName.startsWith(ch)) {
+                            fullNames << name;
+                        }
+                    }
+                }
+
+                int count = fullNames.count();
+                if (count > 0) {
+                    QString text = QString("%1 %2 %3张").arg(dateName).arg(channel).arg(count);
+                    addItem(text, fullNames.join("|"));
                 }
             }
 
-            int count = fullNames.count();
-            if (count > 0) {
-                QString text = QString("%1 %2 %3张").arg(dateName).arg(channel).arg(count);
-                addItem(text, fullNames.join("|"));
-            }
+            dateStart = dateStart.addDays(1);
         }
-
-        dateStart = dateStart.addDays(1);
     }
 
     ui->labTip->setText(QString("共找到 %1 个").arg(ui->listWidget->count()));
