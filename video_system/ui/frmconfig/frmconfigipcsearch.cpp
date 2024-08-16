@@ -44,7 +44,7 @@ void frmConfigIpcSearch::initData()
     QList<QString> columnNames;
     columnNames << "" << "地址" << "用户名称" << "用户密码" << "厂家" << "设备地址" << "配置文件" << "视频文件" << "主码流" << "子码流";
     QList<int> columnWidths;
-    columnWidths << 30 << 100 << 80 << 80 << 80 << 350 << 150 << 150 << 350 << 350;
+    columnWidths << 30 << 100 << 80 << 80 << 80 << 350 << 180 << 180 << 320 << 320;
     ui->tableWidget->setStyleSheet("QCheckBox{padding:0px 0px 0px 7px;}");
 
     //设置列数和列宽
@@ -63,6 +63,10 @@ void frmConfigIpcSearch::initData()
     ui->tableWidget->setColumnHidden(1, true);
     ui->tableWidget->setColumnHidden(2, true);
     ui->tableWidget->setColumnHidden(3, true);
+#if 1 // 不显示子码流地址
+    ui->tableWidget->setColumnHidden(9, true);
+    ui->tableWidget->setColumnWidth (8, ui->tableWidget->columnWidth(8) * 2);
+#endif
 
     //增加一个全选按钮
     ckAll = new QCheckBox(this);

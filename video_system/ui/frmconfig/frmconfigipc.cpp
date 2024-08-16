@@ -63,6 +63,9 @@ void frmConfigIpc::initData()
     model = new QSqlTableModel(this);
     //绑定数据库表到数据模型
     DbHelper::bindTable(AppConfig::LocalDbType, model, "IpcInfo");
+    //设置选取数据条件
+    // model->setQuery("SELECT IpcID, IpcName, NvrName, IpcType, OnvifAddr, ProfileToken, VideoSource, RtspMain, "
+    //                 "IpcPosition, IpcImage, IpcX, IpcY, UserName, UserPwd, IpcEnable, IpcMark FROM IpcInfo;");
     //设置过滤条件
     //model->setFilter("IpcType='http' and IpcID='5'");
     //设置列排序
@@ -101,6 +104,10 @@ void frmConfigIpc::initData()
     ui->tableView->setColumnHidden(4, true);
     ui->tableView->setColumnHidden(5, true);
     ui->tableView->setColumnHidden(6, true);
+#if 1 // 不显示子码流地址
+    ui->tableView->setColumnHidden(8, true);
+    ui->tableView->setColumnWidth (7, ui->tableView->columnWidth(7) * 2);
+#endif
     ui->tableView->setColumnHidden(11, true);
     ui->tableView->setColumnHidden(12, true);
 
