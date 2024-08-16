@@ -63,7 +63,7 @@ void frmConfigIpcSearch::initData()
     ui->tableWidget->setColumnHidden(1, true);
     ui->tableWidget->setColumnHidden(2, true);
     ui->tableWidget->setColumnHidden(3, true);
-#if 1 // 不显示子码流地址
+#if 1 // 不显示子码流
     ui->tableWidget->setColumnHidden(9, true);
     ui->tableWidget->setColumnWidth (8, ui->tableWidget->columnWidth(8) * 2);
 #endif
@@ -234,6 +234,8 @@ void frmConfigIpcSearch::searchFinsh()
 {
     ui->frameRight->setEnabled(true);
     ui->labCount->setText(QString("共搜索到 %1 个设备").arg(devices.count()));
+
+    on_btnMediaAll_clicked();
 }
 
 void frmConfigIpcSearch::searchDevice(bool one, int interval)
