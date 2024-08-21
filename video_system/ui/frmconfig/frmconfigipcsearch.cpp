@@ -467,7 +467,7 @@ void frmConfigIpcSearch::getMedia(int row, OnvifDevice *device)
     ui->tableWidget->setItem(row, 9, itemRtspSub);
 
     //判断已经添加过的禁用行
-    disableRow(device->getOnvifAddr(), row);
+    // disableRow(device->getOnvifAddr(), row);
 }
 
 void frmConfigIpcSearch::on_btnMediaAll_clicked()
