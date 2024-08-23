@@ -157,7 +157,7 @@ void OnvifSearch::checkData(const QByteArray &data, const QString &ip)
             }
         }
     }
-#if 1
+#if 1 //只保留厂商是BovaTech的设备
     if (deviceInfo.name.contains("BovaTech")) {
         deviceInfos << deviceInfo;
         emit receiveDevice(deviceInfo);

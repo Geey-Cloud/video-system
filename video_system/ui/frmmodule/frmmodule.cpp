@@ -155,7 +155,7 @@ void frmModule::initWidget()
     } else {
         newWidget(new frmMsgList, "图文警情", width, height);
         newWidget(new frmMsgTable, "窗口信息", width, height);
-        newWidget(new frmDeviceGps, "悬浮地图", width, 120);
+        // newWidget(new frmDeviceGps, "悬浮地图", width, 120);
         newWidget(new frmDeviceTree, "设备列表", width, height);
 
         QString name = (AppConfig::WorkMode == 3 ? "实训操作" : "云台控制");

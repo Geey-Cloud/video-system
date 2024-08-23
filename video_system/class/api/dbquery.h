@@ -29,11 +29,12 @@ public:
     static void clearNvrInfo();
     static void addNvrInfo(const QString &ip, const QString &name, const QString &type);
 
-    //载入+清空+删除+批量删除 摄像机信息
+    //载入+清空+删除+批量删除+更新网络状态 摄像机信息
     static void loadIpcInfo();
     static void clearIpcInfo();
     static void deleteIpcInfo(const QString &nvrName);
     static void deleteIpcInfos(const QString &ids);
+    static void updateIpcNetState(const QStringList &devNetInfo);
 
     //根据编号获取信息比如经纬度
     static void getIpcInfo(int ipcID, QString &ipcPosition);

@@ -1,16 +1,13 @@
 #include "frmcheckonlinethread.h"
 #include "devicehelper.h"
+#include "dbquery.h"
 
 frmCheckOnlineThread::frmCheckOnlineThread(QObject *parent)
     : QThread(parent)
-{
-
-}
+{}
 
 frmCheckOnlineThread::~frmCheckOnlineThread()
-{
-    checkOnlineTimer->stop();
-}
+{ checkOnlineTimer->stop(); }
 
 void frmCheckOnlineThread::run()
 {
@@ -35,6 +32,8 @@ void frmCheckOnlineThread::checkOnline()
         if (isOnline != devOnlineInfo.at(2)) {
             devOnlineInfos[index].removeAt(2);
             devOnlineInfos[index] << isOnline;
+
+            DbQuery::updateIpcNetState(devOnlineInfos[index]);
             emit devNetChanged(devOnlineInfos[index]);
         }
     }

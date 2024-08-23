@@ -88,7 +88,7 @@ void frmConfigIpc::initData()
     columnNames << "编号" << "名称" << "录像机" << "厂家" << "设备地址" << "配置文件" << "视频文件" << "主码流地址" << "子码流地址" //8
                 << "经纬度" << "地图" << "X坐标" << "Y坐标" << "用户姓名" << "用户密码" << "启用" //15
                 << "IP地址" << "管理端口" << "设备型号" << "固件版本" << "序列号" << "是否在线" << "操作"; //22
-    columnWidths << 40 << 90 << 90 << 80 << 250 << 100 << 100 << 130 << 130
+    columnWidths << 40 << 160 << 90 << 80 << 250 << 100 << 100 << 130 << 130
                  << 150 << 90 << 45 << 45 << 80 << 80 << 40
                  << 120 << 100 << 220 << 320 << 320 << 80 << 120;
 
@@ -164,16 +164,18 @@ void frmConfigIpc::initData()
     // d_ckbox_ipcEnable->setCheckBoxText("启用", "禁用");
     // ui->tableView->setItemDelegateForColumn(15, d_ckbox_ipcEnable);
 
-    checkOnlineThread->start();
+    if (!checkOnlineThread->isRunning()) {
+        checkOnlineThread->start();
 
-    QStringList devOnlineInfo;
-    for (int row = 0; row < ui->tableView->model()->rowCount(); ++row) {
-        QString ip = ui->tableView->model()->data(ui->tableView->model()->index(row, 16)).toString();
-        QString port = ui->tableView->model()->data(ui->tableView->model()->index(row, 17)).toString();
-        QString isOnline = ui->tableView->model()->data(ui->tableView->model()->index(row, 21)).toString();
-        devOnlineInfo.clear();
-        devOnlineInfo << ip << port << isOnline;
-        emit devOnlineInfoSigal(devOnlineInfo);
+        QStringList devOnlineInfo;
+        for (int row = 0; row < ui->tableView->model()->rowCount(); ++row) {
+            QString ip = ui->tableView->model()->data(ui->tableView->model()->index(row, 16)).toString();
+            QString port = ui->tableView->model()->data(ui->tableView->model()->index(row, 17)).toString();
+            QString isOnline = ui->tableView->model()->data(ui->tableView->model()->index(row, 21)).toString();
+            devOnlineInfo.clear();
+            devOnlineInfo << ip << port << isOnline;
+            emit devOnlineInfoSigal(devOnlineInfo);
+        }
     }
 }
 
@@ -198,7 +200,7 @@ void frmConfigIpc::ipcImageChanged()
 
 void frmConfigIpc::ipcNetChanged(const QStringList &devOnlineInfo)
 {
-    qDebug() << devOnlineInfo;
+    qDebug() << TIMEMS << devOnlineInfo;
     QString ip = devOnlineInfo.at(0);
     QString netState = devOnlineInfo.at(2);
     for (int row = 0; row < model->rowCount(); ++row) {
@@ -246,14 +248,18 @@ void frmConfigIpc::addDevice(const QStringList &deviceInfo)
     QString SerialNumber = model->index(row, 20).data().toString();
     QString isOnline = DeviceHelper::checkDeviceOnline(deviceInfo) ? "在线" : "离线";
 
-
     //设备名称自定义递增规则 #后面紧跟序号
     int index = ipcName.indexOf("#");
     if (index >= 0) {
         int len = ipcName.length();
-        int number = ipcName.mid(index + 1, len).toInt();
+        // int number = ipcName.mid(index + 1, len).toInt();
+        QStringList ips = ipcName.mid(index + 1, len).split(".");
+        QString number = QString("%1").arg(ips.last().toInt() + 1);
+        ips.removeLast();
+        ips.append(number);
+        QString ip = ips.join("_");
         QString flag = ipcName.mid(0, index);
-        ipcName = QString("%1#%2").arg(flag).arg(number + 1);
+        ipcName = QString("%1#%2").arg(flag).arg(ip);
     }
 
     //码流地址自定义递增规则(目前限定本地文件)
@@ -314,7 +320,8 @@ void frmConfigIpc::addDevice(const QStringList &deviceInfo)
         //重新定义搜索的摄像机设备命名规则,按照摄像机#ip地址末尾数字的方式
         QString ip = UrlHelper::getUrlIP(onvifAddr);
         QStringList ips = ip.split(".");
-        QString flag = ips.last();
+        // QString flag = ips.last();
+        QString flag = ips.join("_");
         ipcName = QString("摄像机#%1").arg(flag);
         if (rtspMain.startsWith("video=") || rtspMain.startsWith("audio=") || rtspMain.startsWith("screen=")) {
             ipcName = QString("本地设备#%1").arg(ipcID);

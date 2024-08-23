@@ -266,6 +266,12 @@ void DbQuery::deleteIpcInfos(const QString &ids)
     DbHelper::execSql(sql);
 }
 
+void DbQuery::updateIpcNetState(const QStringList &devNetInfo)
+{
+    QString sql = QString("update IpcInfo set isOnline = '%1' where ip = '%2'").arg(devNetInfo.at(2)).arg(devNetInfo.at(0));
+    DbHelper::execSql(sql);
+}
+
 void DbQuery::getIpcInfo(int ipcID, QString &ipcPosition)
 {
     for (int i = 0; i < DbData::IpcInfo_Count; ++i) {
