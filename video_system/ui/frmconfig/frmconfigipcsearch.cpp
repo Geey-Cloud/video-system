@@ -42,9 +42,11 @@ void frmConfigIpcSearch::initForm()
 void frmConfigIpcSearch::initData()
 {
     QList<QString> columnNames;
-    columnNames << "" << "地址" << "用户名称" << "用户密码" << "厂家" << "设备地址" << "配置文件" << "视频文件" << "主码流" << "子码流";
+    columnNames << "" << "IPv4_order" << "厂家" << "IP地址" << "管理端口" << "设备型号" << "固件版本" << "序列号"
+                << "Onvif地址"<< "操作" << "主码流" << "子码流" << "用户名称" << "用户密码" << "配置文件" << "视频文件";
     QList<int> columnWidths;
-    columnWidths << 30 << 100 << 80 << 80 << 80 << 350 << 180 << 180 << 320 << 320;
+    columnWidths << 30 << 80 << 80 << 120 << 120 << 180 << 320 << 320
+                 << 180 << 80 << 180 << 180 << 80 << 80 << 180 << 180;
     ui->tableWidget->setStyleSheet("QCheckBox{padding:0px 0px 0px 7px;}");
 
     //设置列数和列宽
@@ -61,12 +63,17 @@ void frmConfigIpcSearch::initData()
     QtHelper::initTableView(ui->tableWidget, AppData::RowHeight, true, false);
 
     ui->tableWidget->setColumnHidden(1, true);
-    ui->tableWidget->setColumnHidden(2, true);
-    ui->tableWidget->setColumnHidden(3, true);
-#if 1 // 不显示子码流
-    ui->tableWidget->setColumnHidden(9, true);
-    ui->tableWidget->setColumnWidth (8, ui->tableWidget->columnWidth(8) * 2);
-#endif
+    ui->tableWidget->setColumnHidden(8, true);
+    ui->tableWidget->setColumnHidden(10, true);
+    ui->tableWidget->setColumnHidden(11, true);
+    ui->tableWidget->setColumnHidden(12, true);
+    ui->tableWidget->setColumnHidden(13, true);
+    ui->tableWidget->setColumnHidden(14, true);
+    ui->tableWidget->setColumnHidden(15, true);
+// #if 1 // 不显示子码流
+//     ui->tableWidget->setColumnHidden(9, true);
+//     ui->tableWidget->setColumnWidth (8, ui->tableWidget->columnWidth(8) * 2);
+// #endif
 
     //增加一个全选按钮
     ckAll = new QCheckBox(this);
@@ -187,9 +194,11 @@ void frmConfigIpcSearch::receiveDevice(const OnvifDeviceInfo &deviceInfo)
     //qDebug() << deviceInfo;
     QString addr = deviceInfo.onvifAddr;
     QString ip = deviceInfo.deviceIp;
+    QString port = deviceInfo.managementPort;
 
+    QTableWidgetItem *itemIP = new QTableWidgetItem(ip);
     QTableWidgetItem *itemName = new QTableWidgetItem(deviceInfo.name);
-    QTableWidgetItem *itemAddr = new QTableWidgetItem(deviceInfo.onvifAddr);
+    QTableWidgetItem *itemOnvifAddr = new QTableWidgetItem(deviceInfo.onvifAddr);
 
     //复选框,如果勾选了全选则自动选中当前设备
     QCheckBox *itemCk = new QCheckBox(this);
@@ -200,19 +209,27 @@ void frmConfigIpcSearch::receiveDevice(const OnvifDeviceInfo &deviceInfo)
     QTableWidgetItem *itemIPAddr = new QTableWidgetItem;
     itemIPAddr->setData(Qt::DisplayRole, ipAddr);
 
+    QTableWidgetItem *itemManagementPort = new QTableWidgetItem(port);
+
     //没有值的先要放个空的 QTableWidgetItem 防止下面判断失败
     int row = devices.count();
     ui->tableWidget->setCellWidget(row, 0, itemCk);
     ui->tableWidget->setItem(row, 0, new QTableWidgetItem);
     ui->tableWidget->setItem(row, 1, itemIPAddr);
-    ui->tableWidget->setItem(row, 2, new QTableWidgetItem);
-    ui->tableWidget->setItem(row, 3, new QTableWidgetItem);
-    ui->tableWidget->setItem(row, 4, itemName);
-    ui->tableWidget->setItem(row, 5, itemAddr);
+    ui->tableWidget->setItem(row, 2, itemName);
+    ui->tableWidget->setItem(row, 3, itemIP);
+    ui->tableWidget->setItem(row, 4, itemManagementPort);
+    ui->tableWidget->setItem(row, 5, new QTableWidgetItem);
     ui->tableWidget->setItem(row, 6, new QTableWidgetItem);
     ui->tableWidget->setItem(row, 7, new QTableWidgetItem);
-    ui->tableWidget->setItem(row, 8, new QTableWidgetItem);
+    ui->tableWidget->setItem(row, 8, itemOnvifAddr);
     ui->tableWidget->setItem(row, 9, new QTableWidgetItem);
+    ui->tableWidget->setItem(row, 10, new QTableWidgetItem);
+    ui->tableWidget->setItem(row, 11, new QTableWidgetItem);
+    ui->tableWidget->setItem(row, 12, new QTableWidgetItem);
+    ui->tableWidget->setItem(row, 13, new QTableWidgetItem);
+    ui->tableWidget->setItem(row, 14, new QTableWidgetItem);
+    ui->tableWidget->setItem(row, 15, new QTableWidgetItem);
 
     //重新排序
     ui->tableWidget->sortByColumn(1, Qt::AscendingOrder);
@@ -235,6 +252,7 @@ void frmConfigIpcSearch::searchFinsh()
     ui->frameRight->setEnabled(true);
     ui->labCount->setText(QString("共搜索到 %1 个设备").arg(devices.count()));
 
+    // 点击获取所有按钮
     on_btnMediaAll_clicked();
 }
 
@@ -317,10 +335,10 @@ void frmConfigIpcSearch::getMedia(int row, OnvifDevice *device)
     device->getDateTime();
 
     //厂家为空则先获取设备信息(有时候单播后没有拿到设备信息需要主动重新获取)
-    QString manufacturer = ui->tableWidget->item(row, 4)->text();
+    QString manufacturer = ui->tableWidget->item(row, 2)->text();
     if (manufacturer.isEmpty()) {
         OnvifDeviceInfo info = device->getDeviceInfo();
-        ui->tableWidget->item(row, 4)->setText(info.manufacturer);
+        ui->tableWidget->item(row, 2)->setText(info.manufacturer);
     }
 
     //如果没有获取到地址则重新发送另外一种请求数据
@@ -363,7 +381,7 @@ void frmConfigIpcSearch::getMedia(int row, OnvifDevice *device)
     if (countVideo > 1) {
         //取出每个通道的profile和码流地址/不同厂家不同格式/可以根据实际需求进行调整
         QStringList listProfileToken, listVideoSource, listRtspMain, listRtspSub;
-        QString company = ui->tableWidget->item(row, 4)->text().toUpper();
+        QString company = ui->tableWidget->item(row, 2)->text().toUpper();
         if (company == "DAHUA" || company == "HIKVISION") {
             //大华格式: profile 通道1 MediaProfile00000 - 00001 - 00002
             //大华格式: profile 通道2 MediaProfile00100 - 00101 - 00102
@@ -450,23 +468,32 @@ void frmConfigIpcSearch::getMedia(int row, OnvifDevice *device)
     }
 #endif
 
+    QString firmwareVersion = device->getDeviceInfo().firmwareVersion;
+    QString serialNumber = device->getDeviceInfo().serialNumber;
+    QString model = device->getDeviceInfo().model;
+
     //返回的数据添加到表格中
     //现在临时用用户信息补全明文存储在数据库,后期考虑改成其它方式组合
-    QTableWidgetItem *itemUserName = new QTableWidgetItem(userName);
-    QTableWidgetItem *itemUserPwd = new QTableWidgetItem(userPwd);
-    QTableWidgetItem *itemProfileToken = new QTableWidgetItem(profileToken);
-    QTableWidgetItem *itemVideoSource = new QTableWidgetItem(videoSource);
-    QTableWidgetItem *itemRtspMain = new QTableWidgetItem(rtspMain);
-    QTableWidgetItem *itemRtspSub = new QTableWidgetItem(rtspSub);
+    QTableWidgetItem *itemUserName          = new QTableWidgetItem(userName);
+    QTableWidgetItem *itemUserPwd           = new QTableWidgetItem(userPwd);
+    QTableWidgetItem *itemProfileToken      = new QTableWidgetItem(profileToken);
+    QTableWidgetItem *itemVideoSource       = new QTableWidgetItem(videoSource);
+    QTableWidgetItem *itemRtspMain          = new QTableWidgetItem(rtspMain);
+    QTableWidgetItem *itemRtspSub           = new QTableWidgetItem(rtspSub);
+    QTableWidgetItem *itemModel             = new QTableWidgetItem(model);
+    QTableWidgetItem *itemFirmwareVersion   = new QTableWidgetItem(firmwareVersion);
+    QTableWidgetItem *itemSerialNumber      = new QTableWidgetItem(serialNumber);
 
-    ui->tableWidget->setItem(row, 2, itemUserName);
-    ui->tableWidget->setItem(row, 3, itemUserPwd);
-    ui->tableWidget->setItem(row, 6, itemProfileToken);
-    ui->tableWidget->setItem(row, 7, itemVideoSource);
-    ui->tableWidget->setItem(row, 8, itemRtspMain);
-    ui->tableWidget->setItem(row, 9, itemRtspSub);
-
-    //判断已经添加过的禁用行
+    ui->tableWidget->setItem(row, 5, itemModel);
+    ui->tableWidget->setItem(row, 6, itemFirmwareVersion);
+    ui->tableWidget->setItem(row, 7, itemSerialNumber);
+    ui->tableWidget->setItem(row, 10, itemRtspMain);
+    ui->tableWidget->setItem(row, 11, itemRtspSub);
+    ui->tableWidget->setItem(row, 12, itemUserName);
+    ui->tableWidget->setItem(row, 13, itemUserPwd);
+    ui->tableWidget->setItem(row, 14, itemProfileToken);
+    ui->tableWidget->setItem(row, 15, itemVideoSource);
+    //判断已经添加过的禁用行 这段代码会导致程序异常崩溃
     // disableRow(device->getOnvifAddr(), row);
 }
 
@@ -483,7 +510,7 @@ void frmConfigIpcSearch::on_btnMediaAll_clicked()
         QString url = device->getOnvifAddr();
         int row = -1;
         for (int i = 0; i < count; ++i) {
-            QString addr = ui->tableWidget->item(i, 5)->text();
+            QString addr = ui->tableWidget->item(i, 8)->text();
             if (url == addr) {
                 row = i;
                 break;
@@ -495,12 +522,12 @@ void frmConfigIpcSearch::on_btnMediaAll_clicked()
         }
 
         //如果当前行已经存在码流地址则不需要继续,加快下一次获取所有的速度,跳过已经获取过的
-        QString rtspAddr = ui->tableWidget->item(row, 8)->text();
+        QString rtspAddr = ui->tableWidget->item(row, 10)->text();
         if (!rtspAddr.isEmpty()) {
             continue;
         }
 
-        //qDebug() << TIMEMS << row << url;
+        // qDebug() << TIMEMS << row << url;
         //getMedia(row, device);
         //存入队列排队处理,在很多设备的时候全部这里执行并发量太大Qt限制了并发请求5个
         listRow << row;
@@ -525,7 +552,7 @@ void frmConfigIpcSearch::on_btnMediaOne_clicked()
         return;
     }
 
-    QString addr = ui->tableWidget->item(row, 5)->text();
+    QString addr = ui->tableWidget->item(row, 8)->text();
     foreach (OnvifDevice *device, devices) {
         if (device->getOnvifAddr() == addr) {
             getMedia(row, device);
@@ -543,8 +570,9 @@ void frmConfigIpcSearch::addDevice(int row, bool one)
     }
 
     //判断节点是否存在
-    QTableWidgetItem *item = ui->tableWidget->item(row, 8);
+    QTableWidgetItem *item = ui->tableWidget->item(row, 10);
     if (!item) {
+        qDebug() << TIMEMS << "节点不存在";
         return;
     }
 
@@ -559,19 +587,29 @@ void frmConfigIpcSearch::addDevice(int row, bool one)
         return;
     }
 
-    QString userName = ui->tableWidget->item(row, 2)->text();
-    QString userPwd = ui->tableWidget->item(row, 3)->text();
-    QString ipcType = ui->tableWidget->item(row, 4)->text();
-    QString onvifAddr = ui->tableWidget->item(row, 5)->text();
-    QString profileToken = ui->tableWidget->item(row, 6)->text();
-    QString videoSource = ui->tableWidget->item(row, 7)->text();
-    QString rtspSub = ui->tableWidget->item(row, 9)->text();
+    QString userName = ui->tableWidget->item(row, 12)->text();
+    QString userPwd = ui->tableWidget->item(row, 13)->text();
+    QString ipcType = ui->tableWidget->item(row, 2)->text();
+    QString onvifAddr = ui->tableWidget->item(row, 8)->text();
+    QString profileToken = ui->tableWidget->item(row, 14)->text();
+    QString videoSource = ui->tableWidget->item(row, 15)->text();
+    QString rtspSub = ui->tableWidget->item(row, 11)->text();
+    QString ip = ui->tableWidget->item(row, 3)->text();
+    QString port = ui->tableWidget->item(row, 4)->text();
+    QString model = ui->tableWidget->item(row, 5)->text();
+    QString firmwareVersion = ui->tableWidget->item(row, 6)->text();
+    QString serialNumber = ui->tableWidget->item(row, 7)->text();
 
     //如果有多个则分别插入
     QStringList listProfileToken = profileToken.split("|");
     QStringList listVideoSource = videoSource.split("|");
     QStringList listRtspMain = rtspMain.split("|");
     QStringList listRtspSub = rtspSub.split("|");
+    QStringList listIP = ip.split("|");
+    QStringList listPort = port.split("|");
+    QStringList listModel = model.split("|");
+    QStringList listFirmwareVersion = firmwareVersion.split("|");
+    QStringList listSerialNumber = serialNumber.split("|");
 
     int count = listProfileToken.count();
     for (int i = 0; i < count; ++i) {
@@ -580,6 +618,11 @@ void frmConfigIpcSearch::addDevice(int row, bool one)
         QString videoSource = listVideoSource.at(i);
         QString rtspMain = listRtspMain.at(i);
         QString rtspSub = listRtspSub.at(i);
+        QString ip = listIP.at(i);
+        QString port = listPort.at(i);
+        QString model = listModel.at(i);
+        QString firmwareVersion = listFirmwareVersion.at(i);
+        QString serialNumber = listSerialNumber.at(i);
         if (count > 1) {
             //取出通道编号
             int ch = i + 1;
@@ -596,7 +639,8 @@ void frmConfigIpcSearch::addDevice(int row, bool one)
         }
 
         QStringList deviceInfo;
-        deviceInfo << userName << userPwd << company << onvifAddr << profileToken << videoSource << rtspMain << rtspSub;
+        deviceInfo << userName << userPwd << company << onvifAddr << profileToken << videoSource << rtspMain << rtspSub
+                   << ip << port << model << firmwareVersion << serialNumber;
         deviceInfos << deviceInfo;
     }
 }
@@ -606,6 +650,7 @@ void frmConfigIpcSearch::on_btnAddAll_clicked()
     deviceInfos.clear();
     int count = devices.count();
     for (int row = 0; row < count; ++row) {
+        // qDebug() << TIMEMS << QString("正在添加第%1行").arg(row);
         addDevice(row, false);
     }
 

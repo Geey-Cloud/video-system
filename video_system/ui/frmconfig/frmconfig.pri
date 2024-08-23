@@ -13,6 +13,7 @@ FORMS += \
     $$PWD/frmconfigvideo.ui
 
 HEADERS += \
+    $$PWD/frmcheckonlinethread.h \
     $$PWD/frmconfig.h \
     $$PWD/frmconfigenable.h \
     $$PWD/frmconfigipc.h \
@@ -27,6 +28,7 @@ HEADERS += \
     $$PWD/frmconfigvideo.h
 
 SOURCES += \
+    $$PWD/frmcheckonlinethread.cpp \
     $$PWD/frmconfig.cpp \
     $$PWD/frmconfigenable.cpp \
     $$PWD/frmconfigipc.cpp \

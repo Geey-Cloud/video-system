@@ -18,6 +18,7 @@ frmConfigIpc::frmConfigIpc(QWidget *parent) : QWidget(parent), ui(new Ui::frmCon
 
 frmConfigIpc::~frmConfigIpc()
 {
+    checkOnlineThread->stop();
     delete ui;
 }
 
@@ -49,6 +50,12 @@ void frmConfigIpc::initForm()
 
     //关联批量添加窗体信号
     connect(frmConfigPlus::Instance(), SIGNAL(addPlus(QStringList, QStringList)), this, SLOT(addPlus(QStringList, QStringList)));
+
+    //设备上下线线程以及关联对应的信号槽
+    checkOnlineThread = new frmCheckOnlineThread();
+    connect(this, SIGNAL(devOnlineInfoSigal(QStringList)), checkOnlineThread, SLOT(onReceiveDevOnlineInfoSlot(QStringList)));
+    connect(this, SIGNAL(devOnlineInfoDelSignal(QStringList,bool)), checkOnlineThread, SLOT(delDevOnlineInfoSlot(QStringList, bool)));
+    connect(checkOnlineThread, SIGNAL(devNetChanged(QStringList)), this, SLOT(ipcNetChanged(QStringList)));
 }
 
 void frmConfigIpc::initIcon()
@@ -78,21 +85,23 @@ void frmConfigIpc::initData()
     ui->tableView->setModel(model);
 
     //初始化列名和列宽
-    columnNames << "编号" << "名称" << "录像机" << "厂家" << "设备地址" << "配置文件" << "视频文件" << "主码流地址" << "子码流地址"
-                << "经纬度" << "地图" << "X坐标" << "Y坐标" << "用户姓名" << "用户密码" << "启用" << "备注";
+    columnNames << "编号" << "名称" << "录像机" << "厂家" << "设备地址" << "配置文件" << "视频文件" << "主码流地址" << "子码流地址" //8
+                << "经纬度" << "地图" << "X坐标" << "Y坐标" << "用户姓名" << "用户密码" << "启用" //15
+                << "IP地址" << "管理端口" << "设备型号" << "固件版本" << "序列号" << "是否在线" << "操作"; //22
     columnWidths << 40 << 90 << 90 << 80 << 250 << 100 << 100 << 130 << 130
-                 << 150 << 90 << 45 << 45 << 80 << 80 << 40 << 60;
+                 << 150 << 90 << 45 << 45 << 80 << 80 << 40
+                 << 120 << 100 << 220 << 320 << 320 << 80 << 120;
 
-    //特殊分辨率重新设置列宽
+    // //特殊分辨率重新设置列宽
     int count = columnNames.count();
-    if (QtHelper::deskWidth() >= 1920) {
-        for (int i = 0; i < count - 2; ++i) {
-            columnWidths[i] += 30;
-        }
+    // if (QtHelper::deskWidth() >= 1920) {
+    //     for (int i = 0; i < count - 2; ++i) {
+    //         columnWidths[i] += 30;
+    //     }
 
-        columnWidths[7] = 350;
-        columnWidths[8] = 350;
-    }
+    //     columnWidths[7] = 350;
+    //     columnWidths[8] = 350;
+    // }
 
     //挨个设置列名和列宽
     for (int i = 0; i < count; ++i) {
@@ -100,48 +109,72 @@ void frmConfigIpc::initData()
         ui->tableView->setColumnWidth(i, columnWidths.at(i));
     }
 
+
     //设置隐藏列
+    ui->tableView->setColumnHidden(2, true);
     ui->tableView->setColumnHidden(4, true);
     ui->tableView->setColumnHidden(5, true);
     ui->tableView->setColumnHidden(6, true);
-#if 1 // 不显示子码流地址
+    ui->tableView->setColumnHidden(7, true);
     ui->tableView->setColumnHidden(8, true);
-    ui->tableView->setColumnWidth (7, ui->tableView->columnWidth(7) * 2);
-#endif
+    ui->tableView->setColumnHidden(9, true);
+    ui->tableView->setColumnHidden(10, true);
     ui->tableView->setColumnHidden(11, true);
     ui->tableView->setColumnHidden(12, true);
+    ui->tableView->setColumnHidden(13, true);
+    ui->tableView->setColumnHidden(14, true);
+    ui->tableView->setColumnHidden(15, true);
+// #if 1 // 不显示子码流地址
+//     ui->tableView->setColumnHidden(8, true);
+//     ui->tableView->setColumnWidth (7, ui->tableView->columnWidth(7) * 2);
+// #endif
+//     ui->tableView->setColumnHidden(11, true);
+//     ui->tableView->setColumnHidden(12, true);
 
-    //录像机委托
-    d_cbox_nvrName = new DbDelegate(this);
-    d_cbox_nvrName->setDelegateType("QComboBox");
-    ui->tableView->setItemDelegateForColumn(2, d_cbox_nvrName);
-    nvrNameChanged();
+    // //录像机委托
+    // d_cbox_nvrName = new DbDelegate(this);
+    // d_cbox_nvrName->setDelegateType("QComboBox");
+    // ui->tableView->setItemDelegateForColumn(2, d_cbox_nvrName);
+    // nvrNameChanged();
 
-    //类型委托
-    DbDelegate *d_cbox_ipcType = new DbDelegate(this);
-    d_cbox_ipcType->setDelegateType("QComboBox");
-    d_cbox_ipcType->setDelegateValue(AppData::IpcTypes);
-    //ui->tableView->setItemDelegateForColumn(3, d_cbox_ipcType);
 
-    //背景地图委托
-    d_cbox_ipcImage = new DbDelegate(this);
-    d_cbox_ipcImage->setDelegateType("QComboBox");
-    ui->tableView->setItemDelegateForColumn(10, d_cbox_ipcImage);
-    ipcImageChanged();
+    // //类型委托
+    // DbDelegate *d_cbox_ipcType = new DbDelegate(this);
+    // d_cbox_ipcType->setDelegateType("QComboBox");
+    // d_cbox_ipcType->setDelegateValue(AppData::IpcTypes);
+    // // ui->tableView->setItemDelegateForColumn(3, d_cbox_ipcType);
 
-    //用户密码委托
-    DbDelegate *d_txt_userPwd = new DbDelegate(this);
-    d_txt_userPwd->setDelegateType("QLineEdit");
-    d_txt_userPwd->setDelegatePwd(true);
-    d_txt_userPwd->setDelegateColumn(14);
-    ui->tableView->setItemDelegateForColumn(14, d_txt_userPwd);
+    // //背景地图委托
+    // d_cbox_ipcImage = new DbDelegate(this);
+    // d_cbox_ipcImage->setDelegateType("QComboBox");
+    // ui->tableView->setItemDelegateForColumn(10, d_cbox_ipcImage);
+    // ipcImageChanged();
 
-    //启用禁用委托
-    DbDelegate *d_ckbox_ipcEnable = new DbDelegate(this);
-    d_ckbox_ipcEnable->setDelegateColumn(15);
-    d_ckbox_ipcEnable->setDelegateType("QCheckBox");
-    d_ckbox_ipcEnable->setCheckBoxText("启用", "禁用");
-    ui->tableView->setItemDelegateForColumn(15, d_ckbox_ipcEnable);
+    // //用户密码委托
+    // DbDelegate *d_txt_userPwd = new DbDelegate(this);
+    // d_txt_userPwd->setDelegateType("QLineEdit");
+    // d_txt_userPwd->setDelegatePwd(true);
+    // d_txt_userPwd->setDelegateColumn(14);
+    // ui->tableView->setItemDelegateForColumn(14, d_txt_userPwd);
+
+    // //启用禁用委托
+    // DbDelegate *d_ckbox_ipcEnable = new DbDelegate(this);
+    // d_ckbox_ipcEnable->setDelegateColumn(15);
+    // d_ckbox_ipcEnable->setDelegateType("QCheckBox");
+    // d_ckbox_ipcEnable->setCheckBoxText("启用", "禁用");
+    // ui->tableView->setItemDelegateForColumn(15, d_ckbox_ipcEnable);
+
+    checkOnlineThread->start();
+
+    QStringList devOnlineInfo;
+    for (int row = 0; row < ui->tableView->model()->rowCount(); ++row) {
+        QString ip = ui->tableView->model()->data(ui->tableView->model()->index(row, 16)).toString();
+        QString port = ui->tableView->model()->data(ui->tableView->model()->index(row, 17)).toString();
+        QString isOnline = ui->tableView->model()->data(ui->tableView->model()->index(row, 21)).toString();
+        devOnlineInfo.clear();
+        devOnlineInfo << ip << port << isOnline;
+        emit devOnlineInfoSigal(devOnlineInfo);
+    }
 }
 
 void frmConfigIpc::nvrNameChanged()
@@ -163,8 +196,27 @@ void frmConfigIpc::ipcImageChanged()
     d_cbox_ipcImage->setDelegateValue(mapNames);
 }
 
+void frmConfigIpc::ipcNetChanged(const QStringList &devOnlineInfo)
+{
+    qDebug() << devOnlineInfo;
+    QString ip = devOnlineInfo.at(0);
+    QString netState = devOnlineInfo.at(2);
+    for (int row = 0; row < model->rowCount(); ++row) {
+        QString ip_model = model->data(model->index(row, 16)).toString();
+        //找到网络改变的设备所在行
+        if (ip == ip_model) {
+            model->setData(model->index(row, 21), netState);
+            break;
+        }
+    }
+}
+
 void frmConfigIpc::addDevice(const QStringList &deviceInfo)
 {
+    // for (int index = 0; index < deviceInfo.count(); ++index){
+    //     qDebug() << index << deviceInfo[index];
+    // }
+
     //插入一行
     int count = model->rowCount();
     model->insertRow(count);
@@ -187,6 +239,13 @@ void frmConfigIpc::addDevice(const QStringList &deviceInfo)
     QString userName = model->index(row, 13).data().toString();
     QString userPwd = model->index(row, 14).data().toString();
     QString ipcEnable = model->index(row, 15).data().toString();
+    QString ip = model->index(row, 16).data().toString();
+    int port = model->index(row, 17).data().toInt();
+    QString deviceModel = model->index(row, 18).data().toString();
+    QString firmwareVersion = model->index(row, 19).data().toString();
+    QString SerialNumber = model->index(row, 20).data().toString();
+    QString isOnline = DeviceHelper::checkDeviceOnline(deviceInfo) ? "在线" : "离线";
+
 
     //设备名称自定义递增规则 #后面紧跟序号
     int index = ipcName.indexOf("#");
@@ -246,6 +305,11 @@ void frmConfigIpc::addDevice(const QStringList &deviceInfo)
         videoSource = deviceInfo.at(5);
         rtspMain = deviceInfo.at(6);
         rtspSub = deviceInfo.at(7);
+        ip = deviceInfo.at(8);
+        port = deviceInfo.at(9).toInt();
+        deviceModel = deviceInfo.at(10);
+        firmwareVersion = deviceInfo.at(11);
+        SerialNumber = deviceInfo.at(12);
 
         //重新定义搜索的摄像机设备命名规则,按照摄像机#ip地址末尾数字的方式
         QString ip = UrlHelper::getUrlIP(onvifAddr);
@@ -307,6 +371,16 @@ void frmConfigIpc::addDevice(const QStringList &deviceInfo)
     model->setData(model->index(count, 13), userName);
     model->setData(model->index(count, 14), userPwd);
     model->setData(model->index(count, 15), ipcEnable);
+    model->setData(model->index(count, 16), ip);
+    model->setData(model->index(count, 17), port);
+    model->setData(model->index(count, 18), deviceModel);
+    model->setData(model->index(count, 19), firmwareVersion);
+    model->setData(model->index(count, 20), SerialNumber);
+    model->setData(model->index(count, 21), isOnline);
+
+    QStringList devOnlineInfo;
+    devOnlineInfo << ip << QString("%1").arg(port) << isOnline;
+    emit devOnlineInfoSigal(devOnlineInfo);
 }
 
 void frmConfigIpc::addDevices(const QList<QStringList> &deviceInfos)
@@ -456,7 +530,7 @@ void frmConfigIpc::on_btnDelete_clicked()
 
     if (QtHelper::showMessageBoxQuestion("确定要删除选中的摄像机吗?\n摄像机对应的轮询信息都会被删除!") == QMessageBox::Yes) {
         //获取选中行的内容
-        QStringList ids, addrs;
+        QStringList ids, addrs, devOnlineInfoDel;
         QItemSelectionModel *selections = ui->tableView->selectionModel();
         QModelIndexList selected = selections->selectedIndexes();
         foreach (QModelIndex index, selected) {
@@ -466,6 +540,8 @@ void frmConfigIpc::on_btnDelete_clicked()
                 ids << text;
             } else if (column == 7) {
                 addrs << text;
+            } else if (column == 16 || column == 17 || column == 21) {
+                devOnlineInfoDel <<text;
             }
         }
 
@@ -474,6 +550,8 @@ void frmConfigIpc::on_btnDelete_clicked()
         AppEvent::Instance()->slot_saveIpcInfo(true);
         model->select();
         ui->tableView->setCurrentIndex(model->index(model->rowCount() - 1, 0));
+
+        emit devOnlineInfoDelSignal(devOnlineInfoDel, true);
     }
 }
 
@@ -492,6 +570,9 @@ void frmConfigIpc::on_btnClear_clicked()
         DbQuery::clearIpcInfo();
         AppEvent::Instance()->slot_saveIpcInfo(true);
         model->select();
+
+        QStringList nullString;
+        emit devOnlineInfoDelSignal(nullString, false);
     }
 }
 

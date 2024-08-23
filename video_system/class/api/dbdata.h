@@ -41,6 +41,11 @@ public:
     static QList<QString> IpcInfo_UserPwd;
     static QList<QString> IpcInfo_IpcEnable;
     static QList<bool> IpcInfo_IpcOnline;
+    static QList<QString> IpcInfo_IpcModel;
+    static QList<QString> IpcInfo_FirmwareVersion;
+    static QList<QString> IpcInfo_SerialNumber;
+    static QList<QString> IpcInfo_IP;
+    static QList<int> IpcInfo_Port;
 
     //根据配置文件默认打开主码流还是子码流取出流地址
     static QString getRtspAddr(int index);

@@ -18,6 +18,7 @@ struct OnvifDeviceInfo {
     //这部分是广播搜索返回的
     QString onvifAddr;      //协议地址-onvif地址
     QString deviceIp;       //设备地址-ip地址
+    QString managementPort; //管理端口
     QString name;           //设备厂家
     QString location;       //厂家城市
     QString hardware;       //硬件描述
@@ -35,6 +36,7 @@ struct OnvifDeviceInfo {
         QStringList list;
         list << QString("协议地址: %1").arg(deviceInfo.onvifAddr);
         list << QString("设备地址: %1").arg(deviceInfo.deviceIp);
+        list << QString("管理端口: %1").arg(deviceInfo.managementPort);
         list << QString("设备厂家: %1").arg(deviceInfo.name);
         list << QString("厂家城市: %1").arg(deviceInfo.location);
         list << QString("硬件描述: %1").arg(deviceInfo.hardware);

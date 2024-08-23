@@ -406,7 +406,7 @@ void DeviceOnvif::receiveEvent(const QString &url, const OnvifEventInfo &event)
     }
 
     //事件内容存放在结构体数据中
-    //qDebug() << TIMEMS << event;
+    QString sourceName = event.sourceName;
     QString name = event.dataName;
     QVariant value = event.dataValue;
 
@@ -418,10 +418,10 @@ void DeviceOnvif::receiveEvent(const QString &url, const OnvifEventInfo &event)
     //有多种关键字可以自行过滤需要的
     if (!eventName.contains(name)) {
         //对应收到的未知的报警可以自行根据厂家规则约定加到 config/event.txt 事件字典表中
-        qDebug() << TIMEMS << "未知报警事件" << QtHelper::getIP(url) << name << value;
+        qDebug() << TIMEMS << "未知报警事件" << QtHelper::getIP(url) << sourceName << name << value;
         return;
     } else {
-        qDebug() << TIMEMS << "收到报警事件" << QtHelper::getIP(url) << name << value;
+        qDebug() << TIMEMS << "收到报警事件" << QtHelper::getIP(url) << sourceName << name << value;
     }
 
     //过滤不在本系统中的设备发过来的报警

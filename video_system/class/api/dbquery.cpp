@@ -157,11 +157,17 @@ void DbQuery::loadIpcInfo()
     DbData::IpcInfo_UserPwd.clear();
     DbData::IpcInfo_IpcEnable.clear();
     DbData::IpcInfo_IpcOnline.clear();
+    DbData::IpcInfo_IpcModel.clear();
+    DbData::IpcInfo_FirmwareVersion.clear();
+    DbData::IpcInfo_SerialNumber.clear();
+    DbData::IpcInfo_IP.clear();
+    DbData::IpcInfo_Port.clear();
 
     QString column1 = "IpcID,IpcName,NvrName,IpcType";
     QString column2 = "OnvifAddr,ProfileToken,VideoSource,RtspMain,RtspSub";
     QString column3 = "IpcPosition,IpcImage,IpcX,IpcY,UserName,UserPwd,IpcEnable";
-    QString sql = QString("select %1,%2,%3 from IpcInfo order by IpcID asc").arg(column1).arg(column2).arg(column3);
+    QString column4 = "IpcModel,FirmwareVersion,SerialNumber,IP,Port,IsOnline";
+    QString sql = QString("select %1,%2,%3,%4 from IpcInfo order by IpcID asc").arg(column1).arg(column2).arg(column3).arg(column4);
     QSqlQuery query;
     if (!query.exec(sql)) {
         qDebug() << TIMEMS << query.lastError().text() << sql;
@@ -185,6 +191,12 @@ void DbQuery::loadIpcInfo()
         QString userName = query.value(13).toString();
         QString userPwd = query.value(14).toString();
         QString ipcEnable = query.value(15).toString();
+        QString ip = query.value(16).toString();
+        int port = query.value(17).toInt();
+        QString ipcModel = query.value(18).toString();
+        QString firmwareVersion = query.value(19).toString();
+        QString serialNumber = query.value(20).toString();
+        bool isOnline = query.value(21).toBool();
         if (ipcEnable != "启用") {
             continue;
         }
@@ -211,7 +223,12 @@ void DbQuery::loadIpcInfo()
         DbData::IpcInfo_UserName << userName;
         DbData::IpcInfo_UserPwd << userPwd;
         DbData::IpcInfo_IpcEnable << ipcEnable;
-        DbData::IpcInfo_IpcOnline << false;
+        DbData::IpcInfo_IpcOnline << isOnline;
+        DbData::IpcInfo_IpcModel << ipcModel;
+        DbData::IpcInfo_FirmwareVersion << firmwareVersion;
+        DbData::IpcInfo_SerialNumber << serialNumber;
+        DbData::IpcInfo_IP << ip;
+        DbData::IpcInfo_Port << port;
     }
 
     //取第一个有背景地图的设备的图片作为默认图片
@@ -352,7 +369,7 @@ void DbQuery::deletePollInfo(const QString &rtspAddr)
 
 void DbQuery::deletePollInfos(const QString &addrs)
 {
-    QString sql = QString("delete from PollInfo where RtspMain in (%1)").arg(addrs);
+    QString sql = QString("delete from PollInfo where RtspMain in ('%1')").arg(addrs);
     DbHelper::execSql(sql);
 }
 

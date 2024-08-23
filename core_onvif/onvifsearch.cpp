@@ -128,6 +128,14 @@ void OnvifSearch::checkData(const QByteArray &data, const QString &ip)
     QString addr = deviceInfo.onvifAddr;
     if (addr.isEmpty()) {
         return;
+    } else {
+        QStringList list = addr.split("/");
+        if (list.at(2).contains(":")){
+            QString managementPort = list.at(2).split(":").at(1);
+            deviceInfo.managementPort = managementPort;
+        } else {
+            deviceInfo.managementPort = "80";
+        }
     }
 
     //已经存在的地址不用继续
@@ -149,7 +157,7 @@ void OnvifSearch::checkData(const QByteArray &data, const QString &ip)
             }
         }
     }
-#if 0
+#if 1
     if (deviceInfo.name.contains("BovaTech")) {
         deviceInfos << deviceInfo;
         emit receiveDevice(deviceInfo);
@@ -252,6 +260,7 @@ bool OnvifSearch::search(const QString &localIP, const QString &deviceIP)
             OnvifDeviceInfo deviceInfo;
             deviceInfo.onvifAddr = deviceIP;
             deviceInfo.deviceIp = ip;
+            deviceInfo.managementPort = QString::number(port);
             deviceInfos << deviceInfo;
             emit receiveDevice(deviceInfo);
             emit receiveInfo(QString("发现设备 -> %1").arg(deviceIP));

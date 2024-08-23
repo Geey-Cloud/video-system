@@ -17,6 +17,10 @@ OnvifEvent::OnvifEvent(QObject *parent) : QObject(parent)
 
 void OnvifEvent::receiveEvent(const OnvifEventInfo &event)
 {
+#if 0 // 显示收到的所有报警信息，包括没有报警名的
+    static int index = 0;
+    qDebug() << QString("******* %1 ********").arg(index++) << event;
+#endif
     if (!event.dataName.isEmpty()) {
         emit receiveEvent(device->onvifAddr, event);
         //正确格式 2020-10-10T08:40:14Z|LogicalState>|1
@@ -25,7 +29,6 @@ void OnvifEvent::receiveEvent(const OnvifEventInfo &event)
             return;
         }
     }
-
     pullMessage();
 }
 

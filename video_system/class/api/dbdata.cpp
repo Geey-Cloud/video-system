@@ -32,6 +32,11 @@ QList<QString> DbData::IpcInfo_UserName = QList<QString>();
 QList<QString> DbData::IpcInfo_UserPwd = QList<QString>();
 QList<QString> DbData::IpcInfo_IpcEnable = QList<QString>();
 QList<bool> DbData::IpcInfo_IpcOnline = QList<bool>();
+QList<QString> DbData::IpcInfo_IpcModel = QList<QString>();
+QList<QString> DbData::IpcInfo_FirmwareVersion = QList<QString>();
+QList<QString> DbData::IpcInfo_SerialNumber = QList<QString>();
+QList<QString> DbData::IpcInfo_IP = QList<QString>();
+QList<int> DbData::IpcInfo_Port = QList<int>();
 
 QString DbData::getRtspAddr(int index)
 {

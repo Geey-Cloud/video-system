@@ -208,8 +208,13 @@ void frmConfigVideo::saveVideoConfig3()
 
 void frmConfigVideo::initVideoConfig4()
 {
+#if 1 // 禁用软件自带的不好用的会导致崩溃的离线检测功能
+    ui->btnCheckOffline->setChecked(true);
+    ui->btnCheckOffline->setDisabled(true);
+#else
     ui->btnCheckOffline->setChecked(AppConfig::CheckOffline);
     connect(ui->btnCheckOffline, SIGNAL(checkedChanged(bool)), this, SLOT(saveVideoConfig4()));
+#endif
 
     ui->cboxRtspType->setCurrentIndex(AppConfig::RtspType);
     connect(ui->cboxRtspType, SIGNAL(currentIndexChanged(int)), this, SLOT(saveVideoConfig4()));

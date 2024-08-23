@@ -64,6 +64,10 @@ public:
     static void getDeviceInfo(QStringList &names, QStringList &addrs, QStringList &points);
     //检查地址在线
     static bool checkOnline(const QString &url);
+    //检查设备在线
+    static bool checkDeviceOnline(const OnvifDeviceInfo &deviceInfo);
+    static bool checkDeviceOnline(const QStringList &deviceInfo);
+    static bool checkDeviceOnline2(const QStringList &devOnlineInfo);
     //弹出预览视频
     static void showVideo(const QString &url, const QString &flag = QString(), int recordTime = 0, const QString &fileName = QString());
 

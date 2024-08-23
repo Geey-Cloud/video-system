@@ -568,11 +568,35 @@ bool DeviceHelper::checkOnline(const QString &url)
     if (!url.startsWith("rtsp")) {
         return true;
     }
-
     QString ip = UrlHelper::getUrlIP(url);
     int port = UrlHelper::getUrlPort(url);
     int timeout = QtHelper::getRandValue(1000, 2000);
     return QtHelper::hostLive(ip, port, timeout);
+}
+
+bool DeviceHelper::checkDeviceOnline(const OnvifDeviceInfo &deviceInfo)
+{
+    QString ip = deviceInfo.deviceIp;
+    QString port = deviceInfo.managementPort;
+    int timeout = QtHelper::getRandValue(1000, 2000);
+    // qDebug() << QString("check host live [%1:%2]").arg(ip).arg(port);
+    return QtHelper::hostLive(ip, port.toInt(), timeout);
+}
+
+bool DeviceHelper::checkDeviceOnline(const QStringList &deviceInfo)
+{
+    QString ip = deviceInfo.at(8);
+    QString port = deviceInfo.at(9);
+    int timeout = QtHelper::getRandValue(1000, 2000);
+    // qDebug() << QString("check host live [%1:%2]").arg(ip).arg(port);
+    return QtHelper::hostLive(ip, port.toInt(), timeout);
+}
+
+bool DeviceHelper::checkDeviceOnline2(const QStringList &devOnlineInfo) {
+    QString ip = devOnlineInfo.at(0);
+    QString port = devOnlineInfo.at(1);
+    int timeout = QtHelper::getRandValue(1000, 2000);
+    return QtHelper::hostLive(ip, port.toInt(), timeout);
 }
 
 void DeviceHelper::showVideo(const QString &url, const QString &flag, int recordTime, const QString &fileName)

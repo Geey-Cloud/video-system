@@ -2,6 +2,7 @@
 #define FRMCONFIGIPC_H
 
 #include <QWidget>
+#include "frmcheckonlinethread.h"
 
 class QSqlTableModel;
 class DbDelegate;
@@ -13,10 +14,15 @@ class frmConfigIpc;
 class frmConfigIpc : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit frmConfigIpc(QWidget *parent = 0);
     ~frmConfigIpc();
+
+    friend class frmCheckOnlineThread;
+
+signals:
+    void devOnlineInfoSigal(const QStringList &devOnlineInfo);
+    void devOnlineInfoDelSignal(const QStringList &devOnlineInfo, const bool &one);
 
 protected:
     void showEvent(QShowEvent *);
@@ -33,6 +39,8 @@ private:
     DbDelegate *d_cbox_nvrName;
     DbDelegate *d_cbox_ipcImage;
 
+    frmCheckOnlineThread *checkOnlineThread;
+
 private slots:
     //初始化窗体数据
     void initForm();
@@ -44,6 +52,9 @@ private slots:
     //录像机名称改变和摄像机图片改变后需要重新更新委托数据
     void nvrNameChanged();
     void ipcImageChanged();
+
+    //设备上下线需要重新更新委托数据
+    void ipcNetChanged(const QStringList &devOnlineInfo);
 
     //添加单个设备和批量添加设备
     void addDevice(const QStringList &deviceInfo);
