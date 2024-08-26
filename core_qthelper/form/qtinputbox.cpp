@@ -45,7 +45,7 @@ void QtInputBox::initForm()
 
     //设置标题和窗体大小
     this->setWindowTitle(ui->QtLabTitle->text());
-    this->setFixedSize(QtDialogMinWidth, QtDialogMinHeight + 10);
+    this->setFixedSize(QtDialogMinWidth + 150, QtDialogMinHeight + 10);
 
     //按钮设置最小尺寸和图标大小
     QList<QPushButton *> btns  = ui->frame->findChildren<QPushButton *>();

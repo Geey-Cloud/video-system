@@ -125,6 +125,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="btnAddRtspStream">
+        <property name="text">
+         <string>添加Rtsp流</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="labTip">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">

@@ -35,6 +35,7 @@ public:
     static void deleteIpcInfo(const QString &nvrName);
     static void deleteIpcInfos(const QString &ids);
     static void updateIpcNetState(const QStringList &devNetInfo);
+    static QString getIpcNetState(const QString &url);
 
     //根据编号获取信息比如经纬度
     static void getIpcInfo(int ipcID, QString &ipcPosition);

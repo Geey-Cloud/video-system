@@ -176,7 +176,6 @@ void DeviceHelper::initDeviceTree(QTreeWidget *treeWidget)
         if (nvrNames.contains(nvrName)) {
             continue;
         }
-
         nvrNames << nvrName;
         QTreeWidgetItem *itemNvr = new QTreeWidgetItem(treeWidget);
         itemNvr->setText(0, nvrName);
@@ -244,6 +243,9 @@ void DeviceHelper::initVideoIcon()
             item->setIcon(0, iconSub);
         } else {
             item->setIcon(0, iconIpc);
+            QString url = item->data(0, Qt::UserRole).toString();
+            bool isOnline = DbQuery::getIpcNetState(url) == "离线" ? true : false;
+            setVideoIcon(url, isOnline);
         }
         ++it;
     }

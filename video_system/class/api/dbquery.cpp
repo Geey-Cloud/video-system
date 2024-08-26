@@ -272,6 +272,20 @@ void DbQuery::updateIpcNetState(const QStringList &devNetInfo)
     DbHelper::execSql(sql);
 }
 
+QString DbQuery::getIpcNetState(const QString &url) {
+    QString sql = QString("select isOnline from IpcInfo where RtspMain='%1'").arg(url);
+    QSqlQuery query;
+    if (!query.exec(sql)) {
+        qDebug() << TIMEMS << query.lastError().text() << sql;
+        return "";
+    }
+
+    if (query.next())
+        return query.value(0).toString();
+    else
+        return "";
+}
+
 void DbQuery::getIpcInfo(int ipcID, QString &ipcPosition)
 {
     for (int i = 0; i < DbData::IpcInfo_Count; ++i) {

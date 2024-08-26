@@ -32,6 +32,12 @@ void frmConfigIpc::initForm()
     ui->widgetTop->setProperty("flag", "navbtn");
     ui->labTip->setText("提示 → 改动后立即应用");
 
+    // todo 修复点击会超界的bug
+    ui->btnAdd->setEnabled(false);
+    ui->btnAdd->hide();
+    ui->btnPlus->setEnabled(false);
+    ui->btnPlus->hide();
+
     //初始化通用的表格属性
     QtHelper::initTableView(ui->tableView, AppData::RowHeight, false, true);
     //关联样式改变信号自动重新设置图标
@@ -168,6 +174,7 @@ void frmConfigIpc::initData()
         checkOnlineThread->start();
 
         QStringList devOnlineInfo;
+        //将表格中每一行的数据发送到设备离线检测线程中判断
         for (int row = 0; row < ui->tableView->model()->rowCount(); ++row) {
             QString ip = ui->tableView->model()->data(ui->tableView->model()->index(row, 16)).toString();
             QString port = ui->tableView->model()->data(ui->tableView->model()->index(row, 17)).toString();
@@ -208,6 +215,7 @@ void frmConfigIpc::ipcNetChanged(const QStringList &devOnlineInfo)
         //找到网络改变的设备所在行
         if (ip == ip_model) {
             model->setData(model->index(row, 21), netState);
+            DeviceHelper::setVideoIcon2(ip, netState == "离线" ? true : false);
             break;
         }
     }
@@ -318,11 +326,11 @@ void frmConfigIpc::addDevice(const QStringList &deviceInfo)
         SerialNumber = deviceInfo.at(12);
 
         //重新定义搜索的摄像机设备命名规则,按照摄像机#ip地址末尾数字的方式
-        QString ip = UrlHelper::getUrlIP(onvifAddr);
+        QString ip = UrlHelper::getUrlIP(rtspMain);
         QStringList ips = ip.split(".");
         // QString flag = ips.last();
         QString flag = ips.join("_");
-        ipcName = QString("摄像机#%1").arg(flag);
+        ipcName = !onvifAddr.isEmpty() ? QString("摄像机#%1").arg(flag) : QString("视频流#%1").arg(flag);
         if (rtspMain.startsWith("video=") || rtspMain.startsWith("audio=") || rtspMain.startsWith("screen=")) {
             ipcName = QString("本地设备#%1").arg(ipcID);
         } else if (flag.isEmpty()) {
@@ -631,3 +639,58 @@ void frmConfigIpc::on_btnSearch_clicked()
     AppConfig::VisibleIpcSearch = ui->widgetIpcSearch->isVisible();
     AppConfig::writeConfig();
 }
+
+void frmConfigIpc::on_btnAddRtspStream_clicked()
+{
+    QString inputResult = QtHelper::showInputBox("添加Rtsp流", 0, 0, "rtsp://admin:admin@192.168.0.1:554/LiveStream/CH0/MainStream/OnvifGet", false, "rtsp://admin:admin@192.168.0.1:554/LiveStream/CH0/MainStream/OnvifGet");
+    if (inputResult.isEmpty()) {
+        QtHelper::showMessageBoxInfo("请输入一个Rtsp流的地址");
+        return;
+    }
+    if (!inputResult.startsWith("rtsp")) {
+        QtHelper::showMessageBoxInfo("请输入一个Rtsp流的地址");
+        return;
+    }
+
+    //todo 判断是不是Bova盒子的视频流
+    QStringList resultList = inputResult.split("/");
+    QString streamInfo = resultList.at(2);
+    QStringList ipcInfoList = streamInfo.split("@");
+
+    QString userName, userPwd, ip, port;
+    if (1 == ipcInfoList.count()) { //不含用户名和密码
+        QStringList addrInfo = ipcInfoList.at(0).split(":");
+        userName = "";
+        userPwd = "";
+        ip = addrInfo.at(0);
+        port = addrInfo.count() == 1 ? "554" : addrInfo.at(1);
+    } else {
+        QStringList ipcUserInfoList = ipcInfoList.at(0).split(":");
+        QStringList addrInfo = ipcInfoList.at(1).split(":");
+
+        userName = ipcUserInfoList.at(0);
+        userPwd = ipcUserInfoList.at(1);
+        ip = addrInfo.at(0);
+        port = addrInfo.count() == 1 ? "554" : addrInfo.at(1);
+    }
+
+    //创建视频流的数据库信息
+    QString company = "";
+    QString ipcType = "";
+    QString onvifAddr = "";
+    QString profileToken = "";
+    QString videoSource = "";
+    QString rtspMain = inputResult;
+    QString rtspSub = inputResult;
+    QString model = "";
+    QString firmwareVersion = "";
+    QString serialNumber = "";
+
+    QStringList deviceInfo;
+    deviceInfo << userName << userPwd << company << onvifAddr << profileToken << videoSource << rtspMain << rtspSub
+               << ip << port << model << firmwareVersion << serialNumber;
+    emit addDevice(deviceInfo);
+    //单击保存按钮
+    on_btnSave_clicked();
+}
+
