@@ -245,7 +245,8 @@ void DeviceOnvif::run()
         }
 
         //判断设备是否在线(为什么这里放在下面执行是为了保证首次处理对应主界面设备树状控件全部加载完成)
-        this->checkOnline();
+        // 在此线程判断是否在线会导致点击[清空]后程序崩溃
+        // this->checkOnline();
     }
 
     stopped = false;
@@ -326,16 +327,16 @@ void DeviceOnvif::checkOnline()
         }
     }
 
-    // //过滤下只有当状态变化了才需要 根据[设备管理]下的[是否在线]情况更改图标
-    // if (online) {
-    //     if (!DbData::IpcInfo_IpcOnline.at(currentIndex)) {
-    //         DeviceHelper::setVideoIcon2(ip, true);
-    //     }
-    // } else {
-    //     if (DbData::IpcInfo_IpcOnline.at(currentIndex)) {
-    //         DeviceHelper::setVideoIcon2(ip, false);
-    //     }
-    // }
+    //过滤下只有当状态变化了才需要 根据[设备管理]下的[是否在线]情况更改图标
+    if (online) {
+        if (!DbData::IpcInfo_IpcOnline.at(currentIndex)) {
+            DeviceHelper::setVideoIcon2(ip, true);
+        }
+    } else {
+        if (DbData::IpcInfo_IpcOnline.at(currentIndex)) {
+            DeviceHelper::setVideoIcon2(ip, false);
+        }
+    }
 
     //qDebug() << TIMEMS << currentIndex << online << ip;
     DbData::IpcInfo_IpcOnline[currentIndex] = online;

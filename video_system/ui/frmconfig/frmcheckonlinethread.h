@@ -35,7 +35,7 @@ public slots:
 
 private:
     QTimer *checkOnlineTimer;
-    int timerInterval = 5000; // 默认5秒检测一次
+    int timerInterval = 30000; // 默认30秒检测一次
     QList<QStringList> devOnlineInfos;
 
 private slots:

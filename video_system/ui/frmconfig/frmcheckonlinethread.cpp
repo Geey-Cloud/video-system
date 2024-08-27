@@ -25,6 +25,8 @@ void frmCheckOnlineThread::stop()
 
 void frmCheckOnlineThread::checkOnline()
 {
+    // QElapsedTimer timer;
+    // timer.start();
     // qDebug() << TIMEMS << QString("正在检测%1个设备的网络情况").arg(devOnlineInfos.count());
     for (int index = 0; index < devOnlineInfos.count(); ++index) {
         QStringList devOnlineInfo = devOnlineInfos.at(index);
@@ -37,6 +39,8 @@ void frmCheckOnlineThread::checkOnline()
             emit devNetChanged(devOnlineInfos[index]);
         }
     }
+    // qint64 elapsed = timer.elapsed();
+    // qDebug() << "函数执行时间：" << elapsed << "毫秒";
 }
 
 void frmCheckOnlineThread::setTimerInterval(const int &timerInterval)

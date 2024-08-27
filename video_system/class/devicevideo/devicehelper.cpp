@@ -597,7 +597,8 @@ bool DeviceHelper::checkDeviceOnline(const QStringList &deviceInfo)
 bool DeviceHelper::checkDeviceOnline2(const QStringList &devOnlineInfo) {
     QString ip = devOnlineInfo.at(0);
     QString port = devOnlineInfo.at(1);
-    int timeout = QtHelper::getRandValue(1000, 2000);
+    // 检测时间最长为[10*设备数量, 100*设备数量]毫秒
+    int timeout = QtHelper::getRandValue(10, 100);
     return QtHelper::hostLive(ip, port.toInt(), timeout);
 }
 
