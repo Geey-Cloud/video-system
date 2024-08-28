@@ -63,7 +63,7 @@ bool frmMain::eventFilter(QObject *watched, QEvent *event)
         if (event->type() == QEvent::MouseButtonDblClick) {
             on_btnMenu_Max_clicked();
         }
-    } else if (watched == ui->labLogoImage) {
+    } /*else if (watched == ui->labLogoImage) {
         //鼠标按下logo弹出关于窗体
         if (event->type() == QEvent::MouseButtonPress) {
             AboutInfo aboutInfo;
@@ -74,7 +74,7 @@ bool frmMain::eventFilter(QObject *watched, QEvent *event)
             aboutInfo.tel = AppConfig::CompanyTel;
             QtHelper::showAboutInfo(aboutInfo);
         }
-    } else if (watched == ui->labWeather) {
+    }*/ else if (watched == ui->labWeather) {
         if (event->type() == QEvent::MouseButtonPress) {
             //鼠标中键按下弹出天气预报网址
             if (qApp->mouseButtons() == Qt::MiddleButton) {

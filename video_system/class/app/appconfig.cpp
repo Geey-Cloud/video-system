@@ -12,9 +12,9 @@ QString AppConfig::StyleName = ":/qss/blackvideo.css";
 QString AppConfig::LogoImage = ":/logo.svg";
 QString AppConfig::CompanyHttp = "https://qtchina.blog.csdn.net/";
 QString AppConfig::CompanyTel = "021-12345678";
-QString AppConfig::Copyright = QString::fromUtf8("物联网技术研究中心");
-QString AppConfig::TitleCn = QString::fromUtf8("安防视频监控管理平台");
-QString AppConfig::TitleEn = "Security video management platform";
+QString AppConfig::Copyright = QString::fromUtf8("");
+QString AppConfig::TitleCn = QString::fromUtf8("AI视频监控管理平台");
+QString AppConfig::TitleEn = "AI video management platform";
 
 int AppConfig::RecordsPerpage = 28;
 int AppConfig::PageButtonCount = 5;
