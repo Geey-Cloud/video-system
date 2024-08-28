@@ -642,7 +642,7 @@ void frmConfigIpc::on_btnSearch_clicked()
 
 void frmConfigIpc::on_btnAddRtspStream_clicked()
 {
-    QString inputResult = QtHelper::showInputBox("添加Rtsp流", 0, 0, "rtsp://admin:admin@192.168.0.1:554/LiveStream/CH0/MainStream/OnvifGet", false, "rtsp://admin:admin@192.168.0.1:554/LiveStream/CH0/MainStream/OnvifGet");
+    QString inputResult = QtHelper::showInputBox("添加Rtsp流", 0, 0, "rtsp://admin:admin@192.168.0.1:554/LiveStream/CH0/MainStream/OnvifGet", false, "");
     if (inputResult.isEmpty()) {
         QtHelper::showMessageBoxInfo("请输入一个Rtsp流的地址");
         return;
