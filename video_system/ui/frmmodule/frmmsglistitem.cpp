@@ -54,34 +54,37 @@ void frmMsgListItem::initForm()
     //设置字号+字体加粗
     QFont font;
     font.setPixelSize(GlobalConfig::FontSize + 2);
-    font.setBold(true);
+    font.setBold(false);
     ui->labMsgTime->setFont(font);
+
     font.setBold(false);
     ui->labMsgContent->setFont(font);
-    ui->labMsgResult->setFont(font);
+    // ui->labMsgResult->setFont(font);
 
     //可以自行调整最小高度
-    ui->labMsgImage->setFixedHeight(60);
+    ui->labMsgImage->setFixedHeight(180);
 }
 
 void frmMsgListItem::setMsg(const QString &msg, const QString &result, const QImage &image, const QString &time)
 {
     ui->labMsgTime->setText(time);
     ui->labMsgContent->setText(msg);
-    ui->labMsgResult->setText(result);
+    // ui->labMsgResult->setText(result);
 
+#if 0
     //不同处理结果不同颜色
     if (result.contains("待处理")) {
         ui->labMsgResult->setStyleSheet(QString("color:%1;").arg(AppConfig::ColorMsgWait));
     } else if (result.contains("已处理")) {
         ui->labMsgResult->setStyleSheet(QString("color:%1;").arg(AppConfig::ColorMsgSolved));
     }
+#endif
 
     //等比例拉伸或者填充图像
     if (!image.isNull()) {
         this->image = image;
         QPixmap pixmap = QPixmap::fromImage(image);
-        pixmap = pixmap.scaled(ui->labMsgImage->size(), Qt::IgnoreAspectRatio);
+        pixmap = pixmap.scaled(ui->labMsgImage->size(), Qt::KeepAspectRatioByExpanding);
         ui->labMsgImage->setPixmap(pixmap);
     }
 }

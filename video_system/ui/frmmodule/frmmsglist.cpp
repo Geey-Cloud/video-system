@@ -64,7 +64,7 @@ void frmMsgList::initPanel()
     //设置边距
     ui->panelWidget->setMargin(6);
     //设置间距
-    ui->panelWidget->setSpace(6);
+    ui->panelWidget->setSpace(0);
     //设置自动横向拉伸
     ui->panelWidget->setAutoWidth(true);
     //设置列数

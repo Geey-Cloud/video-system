@@ -88,8 +88,8 @@ bool AppConfig::OnvifNtp = true;
 
 bool AppConfig::CheckOffline = false;
 bool AppConfig::TreeBig = false;
-bool AppConfig::TreeRtsp = true;
-int AppConfig::RtspType = 1;
+bool AppConfig::TreeRtsp = false;
+int AppConfig::RtspType = 0;
 int AppConfig::AlarmSaveTime = 30;
 int AppConfig::OpenIpcPolicy = 1;
 int AppConfig::OpenNvrPolicy = 1;
