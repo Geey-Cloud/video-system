@@ -154,28 +154,28 @@ void frmModule::initWidget()
         newWidget(new frmDeviceTree, "设备列表", width, height);
     } else {
         newWidget(new frmMsgList, "图文警情", width, height);
-        newWidget(new frmMsgTable, "窗口信息", width, height);
+        // newWidget(new frmMsgTable, "窗口信息", width, height);
         // newWidget(new frmDeviceGps, "悬浮地图", width, 120);
         newWidget(new frmDeviceTree, "设备列表", width, height);
 
-        QString name = (AppConfig::WorkMode == 3 ? "实训操作" : "云台控制");
-        newWidget(new frmIpcPtz, name, width, height);
+        // QString name = (AppConfig::WorkMode == 3 ? "实训操作" : "云台控制");
+        // newWidget(new frmIpcPtz, name, width, height);
         newWidget(new frmIpcControl, "设备控制", width, height);
         newWidget(new frmIpcPreset, "预置巡航", width, height);
 
-        frmIpcPolling *ipcPolling = new frmIpcPolling;
-        connect(videoPanel, SIGNAL(pollStart()), ipcPolling, SLOT(on_btnPollStart_clicked()));
-        newWidget(ipcPolling, "视频轮询", width, height);
+        // frmIpcPolling *ipcPolling = new frmIpcPolling;
+        // connect(videoPanel, SIGNAL(pollStart()), ipcPolling, SLOT(on_btnPollStart_clicked()));
+        // newWidget(ipcPolling, "视频轮询", width, height);
 
-        //如果开启了自动轮询并且上次处于轮询状态则立即轮询
-        //否则自动播放最后的媒体地址集合
-        if (AppConfig::AutoPoll && AppConfig::Polling) {
-            AppConfig::Polling = false;
-            QTimer::singleShot(1000, ipcPolling, SLOT(on_btnPollStart_clicked()));
-        } else {
-            AppConfig::Polling = false;
-            QTimer::singleShot(1000, videoPanel, SLOT(playAll()));
-        }
+        // //如果开启了自动轮询并且上次处于轮询状态则立即轮询
+        // //否则自动播放最后的媒体地址集合
+        // if (AppConfig::AutoPoll && AppConfig::Polling) {
+        //     AppConfig::Polling = false;
+        //     QTimer::singleShot(1000, ipcPolling, SLOT(on_btnPollStart_clicked()));
+        // } else {
+        //     AppConfig::Polling = false;
+        //     QTimer::singleShot(1000, videoPanel, SLOT(playAll()));
+        // }
     }
 
 #if 0
@@ -195,7 +195,7 @@ void frmModule::initWidget()
 
     //设置允许各种嵌套比如上下排列左右排列非常灵活
     //此设置会和下面的 setDockOptions 中的参数覆盖所以要注意顺序
-    //this->setDockNestingEnabled(true);
+    // this->setDockNestingEnabled(true);
 
     //设置停靠参数,不允许重叠,只允许拖动和嵌套
     //this->setDockOptions(AnimatedDocks | AllowNestedDocks);
@@ -205,6 +205,7 @@ void frmModule::initWidget()
     //this->setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
     //没有权限不能对停靠窗体做任何动作/禁止模块拖动
+    // qDebug() << UserHelper::checkPermission("调整布局") << AppConfig::EnableDockMove;
     if (!UserHelper::checkPermission("调整布局") || !AppConfig::EnableDockMove) {
         this->setStyleSheet("QMainWindow::separator{width:0px;height:0px;}QTabWidget{qproperty-movable:false;}");
         foreach (QDockWidget *dockWidget, dockWidgets) {
@@ -239,7 +240,7 @@ QDockWidget *frmModule::newWidget(QWidget *widget, const QString &title, int wid
     connect(dockWidget, SIGNAL(visibilityChanged(bool)), this, SLOT(visibilityChanged(bool)));
 
     //设置只允许左侧和右侧停靠
-    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+    dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea/* | Qt::RightDockWidgetArea*/);
     //设置顶部不可停靠
     //dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
 
@@ -251,6 +252,12 @@ QDockWidget *frmModule::newWidget(QWidget *widget, const QString &title, int wid
 
 void frmModule::addWidget()
 {
+    qDebug() << "addwidget" << AppConfig::WorkMode;
+    int i = 0;
+    foreach(auto item, dockWidgets) {
+        qDebug() << i++ << item->objectName() << this->dockWidgetArea(item);
+    }
+    qDebug() << "********";
     //根据不同的工作模式调整模块的位置
     //下面的居然有顺序要求才能应用透明度,貌似要从右到左,妹的不知道怎么回事
     if (AppConfig::WorkMode == 1) {
@@ -278,33 +285,39 @@ void frmModule::addWidget()
         addWidget(1, 0);
     } else {
         //添加左侧窗体
-        addWidget(2, 0);
         addWidget(0, 0);
         addWidget(1, 0);
-        addWidget(7, 0);
+        addWidget(2, 0);
+        addWidget(3, 0);
 
         //添加右侧窗体
-        addWidget(3, 1);
-        addWidget(4, 1);
-        addWidget(5, 1);
-        addWidget(6, 1);
+        // addWidget(2, 1);
+        // addWidget(4, 1);
+        // addWidget(5, 1);
+        // addWidget(6, 1);
 
         //合并窗体形成选项卡(0-1-7模块一起/4-5-6模块一起)
         this->tabifyWidget(0, 1);
-        this->tabifyWidget(1, 7);
-        this->tabifyWidget(4, 5);
-        this->tabifyWidget(5, 6);
+        // this->tabifyWidget(1, 7);
+        // this->tabifyWidget(4, 5);
+        // this->tabifyWidget(5, 6);
 
         //主动切换到对应窗体选项卡(默认切换选中0/3/5模块)
-        this->raiseWidget(0);
-        this->raiseWidget(4);
+        this->raiseWidget(1);
+        // this->raiseWidget(4);
 
-        //高度不够默认隐藏一些模块(可以手动在标题栏右键开启)
-        if (QtHelper::deskHeight() <= 800) {
-            this->hideWidget(6);
-            this->hideWidget(6);
-        }
+        // //高度不够默认隐藏一些模块(可以手动在标题栏右键开启)
+        // if (QtHelper::deskHeight() <= 800) {
+        //     this->hideWidget(6);
+        //     this->hideWidget(6);
+        // }
     }
+
+    i = 0;
+    foreach(auto item, dockWidgets) {
+        qDebug() << i++ << item->objectName() << this->dockWidgetArea(item);
+    }
+    qDebug() << "********";
 }
 
 void frmModule::addWidget(int index, int position)
@@ -319,8 +332,10 @@ void frmModule::addWidget(QDockWidget *widget, int position)
     //设置停靠位置
     Qt::DockWidgetArea area;
     if (position == 0) {
+        qDebug() << widget->objectName() << "left" << position << this->objectName();
         area = Qt::LeftDockWidgetArea;
     } else if (position == 1) {
+        qDebug() << widget->objectName() << "right" << position << this->objectName();
         area = Qt::RightDockWidgetArea;
     } else if (position == 2) {
         area = Qt::TopDockWidgetArea;
@@ -337,6 +352,7 @@ void frmModule::addWidget(QDockWidget *widget, int position)
 
 void frmModule::tabifyWidget(int index1, int index2)
 {
+    qDebug() << "tabify";
     int count = dockWidgets.count();
     if (index1 < count && index2 < count) {
         this->tabifyDockWidget(dockWidgets.at(index1), dockWidgets.at(index2));

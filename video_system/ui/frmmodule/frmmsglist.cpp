@@ -76,7 +76,7 @@ void frmMsgList::initPanel()
     listResult << "已处理!" << "待处理!";
 
     //不需要演示数据注释下面这段即可
-#if 1
+#if 0
     QList<QWidget *> widgets;
     for (int i = 1; i <= 20; ++i) {
         //时间递减最近的在最前面

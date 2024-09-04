@@ -172,7 +172,7 @@ QString AppConfig::NvrDateTimeStart = QDateTime::currentDateTime().addDays(-1).t
 QString AppConfig::NvrDateTimeEnd = QDateTime::currentDateTime().addDays(0).toString(AppConfig::NvrDateTimeFormat);
 
 QString AppConfig::SearchUserName = "admin";
-QString AppConfig::SearchUserPwd = "Admin123456";
+QString AppConfig::SearchUserPwd = "admin";
 QString AppConfig::SearchLocalIP = "192.168.1.2";
 QString AppConfig::SearchDeviceIP = "192.168.1.128";
 QString AppConfig::SearchFilter = "none";

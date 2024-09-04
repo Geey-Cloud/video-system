@@ -169,6 +169,8 @@ void frmVideoPanel::initForm()
         ui->gridLayout->setSpacing(3);
     }
 
+    // ui->widget->setStyleSheet("background-color: #000000;");
+
     //启动定时器处理鼠标多久未操作自动全屏
     QTimer *timerAutoFull = new QTimer(this);
     connect(timerAutoFull, SIGNAL(timeout()), this, SLOT(autoFull()));
@@ -223,6 +225,7 @@ void frmVideoPanel::initVideo()
 
         videoWidget->setBgText(bgText);
         videoWidget->installEventFilter(this);
+        videoWidget->setStyleSheet("border: 1px solid black;");
 
         //设置音量和静音状态
         videoWidget->setVolume(AppConfig::SoundValue);
