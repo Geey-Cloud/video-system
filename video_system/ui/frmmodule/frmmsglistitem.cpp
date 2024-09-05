@@ -62,7 +62,7 @@ void frmMsgListItem::initForm()
     // ui->labMsgResult->setFont(font);
 
     //可以自行调整最小高度
-    ui->labMsgImage->setFixedHeight(180);
+    ui->labMsgImage->setFixedHeight(150);
 }
 
 void frmMsgListItem::setMsg(const QString &msg, const QString &result, const QImage &image, const QString &time)
@@ -71,14 +71,14 @@ void frmMsgListItem::setMsg(const QString &msg, const QString &result, const QIm
     ui->labMsgContent->setText(msg);
     // ui->labMsgResult->setText(result);
 
-#if 0
-    //不同处理结果不同颜色
-    if (result.contains("待处理")) {
-        ui->labMsgResult->setStyleSheet(QString("color:%1;").arg(AppConfig::ColorMsgWait));
-    } else if (result.contains("已处理")) {
-        ui->labMsgResult->setStyleSheet(QString("color:%1;").arg(AppConfig::ColorMsgSolved));
-    }
-#endif
+
+    // //不同处理结果不同颜色
+    // if (result.contains("待处理")) {
+    //     ui->labMsgResult->setStyleSheet(QString("color:%1;").arg(AppConfig::ColorMsgWait));
+    // } else if (result.contains("已处理")) {
+    //     ui->labMsgResult->setStyleSheet(QString("color:%1;").arg(AppConfig::ColorMsgSolved));
+    // }
+
 
     //等比例拉伸或者填充图像
     if (!image.isNull()) {
