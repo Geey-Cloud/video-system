@@ -279,9 +279,10 @@ void frmModule::addWidget()
         addWidget(1, 0);
     } else {
         //添加左侧窗体
+        addWidget(2, 0);
         addWidget(0, 0);
         addWidget(1, 0);
-        addWidget(2, 0);
+
         addWidget(3, 0);
         addWidget(4, 0);
         addWidget(5, 0);
@@ -290,16 +291,16 @@ void frmModule::addWidget()
         //添加右侧窗体
         // addWidget(2, 1);
 
-        //合并窗体形成选项卡(0-1-2模块一起/3-4-5-6模块一起)
-        this->tabifyWidget(0, 1);
-        this->tabifyWidget(1, 2);
+        //合并窗体形成选项卡(2-1-0模块一起/3-4-5-6模块一起)
+        this->tabifyWidget(2, 1);
+        this->tabifyWidget(1, 0);
 
         this->tabifyWidget(3, 4);
         this->tabifyWidget(4, 5);
         this->tabifyWidget(5, 6);
 
         //主动切换到对应窗体选项卡(默认切换选中0/3/5模块)
-        this->raiseWidget(0);
+        this->raiseWidget(2);
         this->raiseWidget(4);
 
         // 暂时隐藏掉目前不需要的功能，后期加上

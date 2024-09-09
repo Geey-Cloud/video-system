@@ -187,7 +187,6 @@ QString QtHelperData::getXorEncryptDecrypt(const QString &value, char key)
     if (key < 0 || key >= 127) {
         key = 127;
     }
-
     //大概从5.9版本输出的加密密码字符串前面会加上 @String 字符
     QString result = value;
     if (result.startsWith("@String")) {

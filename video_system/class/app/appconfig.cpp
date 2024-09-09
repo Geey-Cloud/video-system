@@ -815,7 +815,8 @@ void AppConfig::writeConfig()
 
     set.beginGroup("SearchConfig");
     set.setValue("SearchUserName", SearchUserName);
-    set.setValue("SearchUserPwd", QtHelper::getXorEncryptDecrypt(SearchUserPwd, 100));
+    // set.setValue("SearchUserPwd", QtHelper::getXorEncryptDecrypt(SearchUserPwd, 100));
+    set.setValue("SearchUserPwd", SearchUserPwd);
     set.setValue("SearchLocalIP", SearchLocalIP);
     set.setValue("SearchDeviceIP", SearchDeviceIP);
     set.setValue("SearchFilter", SearchFilter);

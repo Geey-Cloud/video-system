@@ -290,6 +290,12 @@ void DeviceHelper::setVideoIcon2(const QString &ip, bool online)
                 //break;
             }
         }
+        //摄像机节点不显示主码流和子码流时
+        else if (item->childCount() == 0 && item->parent()) {
+            if (UrlHelper::getUrlIP(url) == ip) {
+                item->setIcon(0, online ? iconIpc : iconIpcx);
+            }
+        }
 #else
         if (UrlHelper::getUrlIP(url) == ip) {
             //item->setDisabled(!online);

@@ -190,8 +190,8 @@ void frmMain::initNav()
 {
     QList<QString> names, texts;
     names << "btnView" << "btnVideo" << "btnMap" << "btnOther" << "btnData" << "btnConfig";
-    texts << "视频监控" << "视频回放" << "电子地图" << "备用模块" << "日志查询" << "系统设置";
-    icons << 0xe68c << 0xe68d << 0xe695 << 0xe6a9 << 0xe699 << 0xe706;
+    texts << "视频监控" << "视频回放" << "电子地图" << "摄像机管理" << "日志查询" << "系统设置";
+    icons << 0xe68c << 0xe68d << 0xe695 << 0xe9f5 << 0xe699 << 0xe706;
 
     if (AppConfig::WorkMode == 3) {
         texts.clear();
